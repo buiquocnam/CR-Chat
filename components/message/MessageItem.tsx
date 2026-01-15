@@ -66,7 +66,7 @@ SeenByAvatars.displayName = "SeenByAvatars";
 const MessageItem = memo(({ isShowName, message, showAvatar, showTime, isSender, seenBy }: MessageItemProps) => {
   return isSender ? (
     <div className="flex flex-col items-end self-end " >
-      <div className="p-2 rounded-lg flex flex-col items-end bg-primary text-primary-foreground max-w-[70%]">
+      <div className="p-2 rounded-lg flex flex-col items-end bg-gradient-to-br from-primary to-primary/90 text-primary-foreground max-w-[70%] shadow-sm">
         <p className="text-right break-words whitespace-pre-wrap w-full ">
           {message.content}
         </p>
@@ -107,7 +107,7 @@ const MessageItem = memo(({ isShowName, message, showAvatar, showTime, isSender,
           {isShowName && (
             <span className="text-xs font-semibold text-primary truncate">{message.senderId.username}</span>
           )}
-          <div className="p-2 rounded-lg bg-secondary text-secondary-foreground">
+          <div className="p-2 rounded-lg bg-secondary text-secondary-foreground shadow-sm">
             <p className="break-words whitespace-pre-wrap">{message.content}</p>
             {showTime && (
               <p className="text-[10px] text-muted-foreground mt-1 text-right">{smartFormat(message.createdAt)}</p>

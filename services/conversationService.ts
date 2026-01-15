@@ -30,6 +30,21 @@ export const conversationService = {
     return response.data;
   },
 
+  createConversation: async (data: { type: "private" | "group"; memberIds: string[]; name?: string }) => {
+    const response = await apiClient.post<Conversation>("/conversations", data);
+    return response.data;
+  },
+
+  addMembers: async (conversationId: string, memberIds: string[]) => {
+      const response = await apiClient.post<Conversation>(`/conversations/${conversationId}/members`, { memberIds });
+      return response.data;
+  },
+
+  getConversationMembers: async (conversationId: string) => {
+    const response = await apiClient.get<Conversation['members']>(`/conversations/${conversationId}/members`);
+    return response.data;
+  },
+
   searchConversations: async (
     query: string,
     params?: CursorPaginationParams
@@ -40,4 +55,4 @@ export const conversationService = {
     );
     return response.data;
   },
-};  
+};

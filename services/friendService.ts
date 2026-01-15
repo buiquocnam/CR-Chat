@@ -67,4 +67,29 @@ export const friendService = {
     );
     return response.data;
   },
+
+  sendRequest: async (receiverId: string) => {
+    const res = await apiClient.post("/friends/request", { receiverId });
+    return res.data;
+  },
+
+  acceptRequest: async (requestId: string) => {
+    const res = await apiClient.post(`/friends/request/${requestId}/accept`);
+    return res.data;
+  },
+
+  rejectRequest: async (requestId: string) => {
+    const res = await apiClient.post(`/friends/request/${requestId}/reject`);
+    return res.data;
+  },
+
+  cancelRequest: async (requestId: string) => {
+    const res = await apiClient.post(`/friends/request/${requestId}/cancel`);
+    return res.data;
+  },
+
+  unfriend: async (friendId: string) => {
+    const res = await apiClient.post("/friends/unfriend", { friendId });
+    return res.data;
+  },
 };

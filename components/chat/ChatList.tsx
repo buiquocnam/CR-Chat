@@ -6,6 +6,7 @@ import { useInfiniteScroll } from "@/hooks/shared/useInfiniteScroll";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
 import ChatItem from "./ChatItem";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 interface ChatListProps {
@@ -31,7 +32,7 @@ export default function ChatList({
   const { loadMoreRef } = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage: isFetchingNextPage ?? false,
-    fetchNextPage: fetchNextPage ?? (() => {}),
+    fetchNextPage: fetchNextPage ?? (() => { }),
   });
 
   if (isLoading && !data) {
@@ -52,8 +53,8 @@ export default function ChatList({
   }
 
   return (
-    <div className="space-y-4 overflow-hidden">
-      <div className="space-y-2 ">
+    <ScrollArea className="h-full pr-4">
+      <div className="space-y-2 pb-4">
         {data.map((conversation) => (
           <ChatItem
             key={conversation._id}
@@ -62,18 +63,18 @@ export default function ChatList({
             currentUser={currentUser}
           />
         ))}
-      </div>
 
-      {/* Load more trigger */}
-      {hasNextPage && (
-        <div ref={loadMoreRef} className="flex justify-center py-4">
-          {isFetchingNextPage ? (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          ) : (
-            <p className="text-xs text-muted-foreground">Load more conversations</p>
-          )}
-        </div>
-      )}
-    </div>
+        {/* Load more trigger */}
+        {hasNextPage && (
+          <div ref={loadMoreRef} className="flex justify-center py-4">
+            {isFetchingNextPage ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : (
+              <p className="text-xs text-muted-foreground">Load more conversations</p>
+            )}
+          </div>
+        )}
+      </div>
+    </ScrollArea>
   );
 }

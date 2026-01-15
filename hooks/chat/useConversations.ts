@@ -32,23 +32,33 @@ export const useConversations = () => {
 };
 
 export const useConversationById = (conversationId: string) => {
-  const emitAsync = useSocketStore((state) => state.emitAsync);
+  const { emitAsync, isConnected } = useSocketStore();
 
   // Join conversation room when opening conversation
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !isConnected) return;
 
     emitAsync("join_conversation", { conversationId }).catch(console.error);
 
     return () => {
-      emitAsync("leave_conversation", { conversationId }).catch(console.error);
+      // Only attempt to leave if we were connected (or check logic inside store)
+      // We can fail silently here if disconnected
+      emitAsync("leave_conversation", { conversationId }).catch(() => {});
     };
     
-  }, [emitAsync, conversationId]);
+  }, [emitAsync, conversationId, isConnected]);
 
   return useQuery<Conversation>({
     queryKey: [QUERY_KEYS.CONVERSATIONS, conversationId],
     enabled: !!conversationId,
     queryFn: () => conversationService.getConversationById(conversationId),
+  });
+};
+
+export const useConversationMembers = (conversationId: string, isOpen: boolean) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.CONVERSATIONS, conversationId, "members"],
+    enabled: !!conversationId && isOpen,
+    queryFn: () => conversationService.getConversationMembers(conversationId),
   });
 };

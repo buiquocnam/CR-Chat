@@ -6,6 +6,9 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
+import { AddMembersDialog } from "@/components/chat/AddMembersDialog";
+import { ConversationMembersDialog } from "@/components/chat/ConversationMembersDialog";
+
 interface ChatWindowHeaderProps {
   conversation: Conversation;
 }
@@ -13,7 +16,7 @@ interface ChatWindowHeaderProps {
 export default function ChatWindowHeader({ conversation }: ChatWindowHeaderProps) {
   const router = useRouter();
 
-  const displayName = conversation.type === "group" 
+  const displayName = conversation.type === "group"
     ? conversation.name || "Group Chat"
     : conversation.createdBy?.username || "Unknown";
 
@@ -58,6 +61,13 @@ export default function ChatWindowHeader({ conversation }: ChatWindowHeaderProps
           </p>
         )}
       </div>
+
+      {conversation.type === "group" && (
+        <>
+          <ConversationMembersDialog conversationId={conversation._id} />
+          <AddMembersDialog conversationId={conversation._id} />
+        </>
+      )}
     </div>
   );
 }

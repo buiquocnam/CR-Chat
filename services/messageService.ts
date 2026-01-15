@@ -16,4 +16,22 @@ export const messageService = {
 
     return response.data;
   },
+
+  sendMessage: async (data: SendMessage): Promise<Message> => {
+    const response = await apiClient.post<Message>("/messages", data);
+    return response.data;
+  },
+
+  markAsSeen: async (conversationId: string, messageId: string) => {
+    const response = await apiClient.post("/messages/seen", {
+      conversationId,
+      messageId,
+    });
+    return response.data;
+  },
+
+  deleteMessage: async (messageId: string) => {
+    const response = await apiClient.delete(`/messages/${messageId}`);
+    return response.data;
+  },
 };

@@ -4,8 +4,8 @@ import { useParams } from "next/navigation";
 import { useConversationById } from "@/hooks/chat/useConversations";
 import ChatWindowLayout from "@/components/chat/ChatWindowLayout";
 import ChatWindowHeader from "@/components/chat/ChatWindowHeader";
-import ChatWindowBody from "@/components/chat/ChatWindowBody";
-import ChatWindowInput from "@/components/chat/ChatWindowInput";
+import ChatWindowBody from "@/components/message/ChatWindowBody";
+import ChatWindowInput from "@/components/message/ChatWindowInput";
 import { Loader2 } from "lucide-react";
 
 export default function ChatPage() {
@@ -16,7 +16,7 @@ export default function ChatPage() {
   if (isLoading) {
     return (
       <ChatWindowLayout>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center h-full">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       </ChatWindowLayout>
@@ -26,7 +26,7 @@ export default function ChatPage() {
   if (!conversation) {
     return (
       <ChatWindowLayout>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center h-full">
           <p className="text-muted-foreground">Conversation not found</p>
         </div>
       </ChatWindowLayout>

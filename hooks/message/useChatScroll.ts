@@ -51,7 +51,7 @@ export const useChatScroll = ({
   // 1. Reset state khi thay đổi cuộc trò chuyện
   useEffect(() => {
     previousMessageCountRef.current = 0;
-    setTimeout(() => setShowNewMessageNotification(false), 0);
+    setShowNewMessageNotification(false);
   }, [conversationId]);
 
   // 2. Logic cuộn ban đầu (Smart Scroll)
@@ -69,16 +69,24 @@ export const useChatScroll = ({
           } 
       }
 
-      if (targetMessageId) {
-           const element = document.getElementById(`message-${targetMessageId}`);
-           if (element) {
-               element.scrollIntoView({ behavior: "auto", block: "center" });
-           } else {
-                containerRef.current.scrollTop = containerRef.current.scrollHeight;
-           }
-      } else {
-           containerRef.current.scrollTop = containerRef.current.scrollHeight;
-      }
+      // Use double requestAnimationFrame to wait for the next paint frame
+      // This allows the virtual list to render and the DOM to settle before we scroll
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!containerRef.current) return;
+
+          if (targetMessageId) {
+               const element = document.getElementById(`message-${targetMessageId}`);
+               if (element) {
+                   element.scrollIntoView({ behavior: "auto", block: "center" });
+               } else {
+                    containerRef.current.scrollTop = containerRef.current.scrollHeight;
+               }
+          } else {
+               containerRef.current.scrollTop = containerRef.current.scrollHeight;
+          }
+        });
+      });
 
       previousMessageCountRef.current = currentMessageCount;
     }
@@ -122,11 +130,13 @@ export const useChatScroll = ({
       if (container.scrollTop < LOAD_MORE_THRESHOLD && hasNextPage && !isFetchingNextPage) {
         const previousScrollHeight = container.scrollHeight;
         fetchNextPage().then(() => {
-          if (container) {
-            // Giữ nguyên vị trí cuộn sau khi tải tin nhắn cũ hơn
-            const scrollDifference = container.scrollHeight - previousScrollHeight;
-            container.scrollTop = scrollDifference;
-          }
+          // Defer DOM manipulation to ensure component has re-rendered with new data
+          requestAnimationFrame(() => {
+            if (container) {
+              const scrollDifference = container.scrollHeight - previousScrollHeight;
+              container.scrollTop = scrollDifference;
+            }
+          });
         });
       }
     };

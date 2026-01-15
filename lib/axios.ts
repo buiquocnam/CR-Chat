@@ -47,8 +47,9 @@ api.interceptors.response.use(
 
     // ❌ bỏ qua auth api
     if (
-      originalRequest.url.includes("/auth/signin") ||
-      originalRequest.url.includes("/auth/signup") ||
+      originalRequest.url.includes("/auth/login") ||
+      originalRequest.url.includes("/auth/register") ||
+      originalRequest.url.includes("/auth/logout") ||
       originalRequest.url.includes("/auth/refresh")
     ) {
       return Promise.reject(error);

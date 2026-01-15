@@ -17,7 +17,7 @@ export default async function RootLayout({
  
 
   return (
-    <html lang="en">
+    <html lang="vi">
       <body
         className="antialiased" 
       >

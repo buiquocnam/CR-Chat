@@ -10,20 +10,51 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
+import { useSignUp } from "@/hooks/auth/useSignUp"
+import { useState } from "react"
+import Link from "next/link"
+
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const { mutate: signUp, isPending } = useSignUp();
+  const [formData, setFormData] = useState({
+    email: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setError("Mật khẩu không khớp!");
+      return;
+    }
+    setError("");
+    signUp({
+      email: formData.email,
+      username: formData.username,
+      password: formData.password,
+    });
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Create your account</h1>
+                <h1 className="text-2xl font-bold">Tạo tài khoản</h1>
                 <p className="text-muted-foreground text-sm text-balance">
-                  Enter your email below to create your account
+                  Nhập email, tên người dùng và mật khẩu
                 </p>
               </div>
               <Field>
@@ -33,39 +64,56 @@ export function SignupForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  value={formData.email}
+                  onChange={handleChange}
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="username">Username</FieldLabel>
+                <FieldLabel htmlFor="username">Tên người dùng</FieldLabel>
                 <Input
                   id="username"
                   type="text"
                   placeholder="johndoe"
                   required
+                  value={formData.username}
+                  onChange={handleChange}
                 />
               </Field>
               <Field>
-                <Field className="grid grid-cols-2 gap-4">
-                  <Field>
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                    <Input id="password" type="password" required />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="confirm-password">
-                      Confirm Password
-                    </FieldLabel>
-                    <Input id="confirm-password" type="password" required />
-                  </Field>
+                <Field>
+                  <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
                 </Field>
+                <Field>
+                  <FieldLabel htmlFor="confirmPassword">
+                    Nhập lại mật khẩu
+                  </FieldLabel>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                  />
+                </Field>
+                {error && <p className="text-sm text-red-500">{error}</p>}
                 <FieldDescription>
-                  Must be at least 8 characters long.
+                  Tối thiểu 6 ký tự.
                 </FieldDescription>
               </Field>
               <Field>
-                <Button type="submit">Create Account</Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Đang tạo..." : "Đăng ký"}
+                </Button>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
-                Or continue with
+                Hoặc tiếp tục với
               </FieldSeparator>
               <Field>
                 <Button variant="outline" type="button">
@@ -79,12 +127,12 @@ export function SignupForm({
                 </Button>
               </Field>
               <FieldDescription className="text-center">
-                Already have an account? <a href="#">Sign in</a>
+                Đã có tài khoản? <Link href="/login">Đăng nhập</Link>
               </FieldDescription>
             </FieldGroup>
           </form>
           <div className="bg-muted relative hidden md:block">
-          <Image
+            <Image
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZ-_2BPSK-YAt4AawPTtvbRL8BW9A0JnFf7PsLj_9DibxKyVouwksokQtJzHMeT1uoMrMlejub8StBcOjErAlrb_nmcHxO594uCSpI5wPMn4ahIae9RO02AsALXeBf0CEELVXpFsNOI2racoULNZ163KXzhDdFGf_vi8bw1DrJhN9KmABoP_B4RfKbeLWIXrESKsoEj4wWH8OQFO44bNeJplxd1G5viG273S4ZbCvy-jlfyMeRSaxBPFvfj6ItcmOFEgJ3lc3toHU"
               alt="Login Image"
               fill
@@ -103,8 +151,8 @@ export function SignupForm({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        Bằng cách tiếp tục, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a>{" "}
+        và <a href="#">Chính sách quyền riêng tư</a>.
       </FieldDescription>
     </div>
   )

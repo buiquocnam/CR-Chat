@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useMessages } from "@/hooks/chat/useMessage";
-import { useMarkMessageAsSeen } from "@/hooks/chat/useMarkMessageAsSeen";
+import { useMessages } from "@/hooks/message/useMessage";
+import { useMarkMessageAsSeen } from "@/hooks/message/useMarkMessageAsSeen";
 import { useAuthStore } from "@/stores/useAuthStore";
 import MessageItem from "./MessageItem";
 import { Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { smartFormat, isTimeGapLarge } from "@/lib";
-import { useChatScroll } from "@/hooks/chat/useChatScroll";
+import { useChatScroll } from "@/hooks/message/useChatScroll";
 import { useConversationById } from "@/hooks/chat/useConversations";
 
 interface ChatWindowBodyProps {
@@ -23,16 +23,16 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
   const currentUserId = useAuthStore((s) => s.user?._id);
 
   // 2. Flatten Messages (Order: Newest First from API, we want Oldest First for list)
-  const allMessages = useMemo(() => 
+  const allMessages = useMemo(() =>
     data?.pages.flatMap((page) => page.data).reverse() ?? []
-  , [data]);
+    , [data]);
 
   // 3. Scroll Logic (Refactored)
-  const { 
-    containerRef, 
-    messagesEndRef, 
-    showNewMessageNotification, 
-    handleScrollToBottom 
+  const {
+    containerRef,
+    messagesEndRef,
+    showNewMessageNotification,
+    handleScrollToBottom
   } = useChatScroll({
     conversationId,
     data,
@@ -41,24 +41,29 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
     isFetchingNextPage,
     fetchNextPage,
     lastReadMessageId: conversation?.lastReadMessageId,
-    currentUserId 
+    currentUserId
   });
 
   // 4. Virtualizer Logic
   const rowVirtualizer = useVirtualizer({
     count: allMessages.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: () => 60, // Estimated height of a message
+    estimateSize: () => 120, // Estimated height of a message - increased to reduce scroll jumps
     overscan: 10,
   });
 
   // 5. Mark Messages as Seen Logic
   const { markAsSeen } = useMarkMessageAsSeen();
   useEffect(() => {
-    if (allMessages.length === 0) return;
+    if (allMessages.length === 0 || !currentUserId) return;
+
     const lastMessage = allMessages[allMessages.length - 1];
     if (lastMessage.senderId._id !== currentUserId) {
-      markAsSeen(conversationId, lastMessage._id);
+      // Defer to avoid "flushSync" or state update during render/mount cycle
+      const timer = setTimeout(() => {
+        markAsSeen(conversationId, lastMessage._id);
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [allMessages, currentUserId, conversationId, markAsSeen]);
 
@@ -105,17 +110,17 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
           const message = allMessages[index];
           const nextMessage = index < allMessages.length - 1 ? allMessages[index + 1] : null;
           const previousMessage = index > 0 ? allMessages[index - 1] : null;
-          
+
           const isSender = message.senderId._id === currentUserId;
-          const showAvatar = !nextMessage || nextMessage.senderId._id !== message.senderId._id; 
-          const isShowName = !previousMessage || previousMessage.senderId._id !== message.senderId._id ;
+          const showAvatar = !nextMessage || nextMessage.senderId._id !== message.senderId._id;
+          const isShowName = !previousMessage || previousMessage.senderId._id !== message.senderId._id;
           const showTimeDivider = !previousMessage || isTimeGapLarge(previousMessage.createdAt, message.createdAt);
-          
+
           // Logic for unread divider
-          const isFirstUnread = conversation?.lastReadMessageId && 
-                                message._id > conversation.lastReadMessageId && 
-                                (!previousMessage || previousMessage._id <= conversation.lastReadMessageId) &&
-                                !isSender;
+          const isFirstUnread = conversation?.lastReadMessageId &&
+            message._id > conversation.lastReadMessageId &&
+            (!previousMessage || previousMessage._id <= conversation.lastReadMessageId) &&
+            !isSender;
 
           return (
             <div
@@ -150,7 +155,7 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
                   showAvatar={showAvatar}
                   showTime={true}
                   isSender={isSender}
-                  seenBy={message.seenBy} 
+                  seenBy={message.seenBy}
                 />
               </div>
             </div>

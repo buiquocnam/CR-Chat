@@ -87,7 +87,7 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
 
         <div className="flex items-center justify-between min-w-0">
           <p className={`text-xs truncate flex-1 ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-            {senderName}: {lastMessageContent}
+            {lastMessage ? `${senderName}: ${lastMessageContent}` : lastMessageContent}
           </p>
 
           {isUnread && (

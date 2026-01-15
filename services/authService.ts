@@ -4,14 +4,12 @@ import { User } from "@/types/user";
 export const authService = {
   signUp: async (
     username: string,
-    password: string,
     email: string,
-    firstName: string,
-    lastName: string
+    password: string
   ) => {
     const res = await api.post<{ accessToken: string, user: User }>(
       "/auth/register",
-      { username, password, email, firstName, lastName },
+      { username, email, password },
       { withCredentials: true }
     );
 

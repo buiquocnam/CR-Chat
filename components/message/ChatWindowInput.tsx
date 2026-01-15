@@ -4,7 +4,7 @@ import { useState, useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Paperclip, Smile } from "lucide-react";
-import { useSendMessage } from "@/hooks/chat/useSendMessage";
+import { useSendMessage } from "@/hooks/message/useSendMessage";
 import { SendMessage } from "@/types/message";
 
 interface ChatWindowInputProps {
