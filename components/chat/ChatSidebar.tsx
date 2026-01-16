@@ -47,33 +47,33 @@ export function ChatSidebar() {
     }
 
     return (
-        <div className="flex flex-col h-full bg-background/50 border-r w-full md:w-[380px] lg:w-[420px]">
-            <div className="p-4 pb-0 space-y-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold tracking-tight">Chats</h1>
+        <div className="flex flex-col h-full w-full md:w-[320px] lg:w-[360px] xl:w-[400px] border-r border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="p-4 pb-2 space-y-5">
+                <div className="flex items-center justify-between px-1 mt-2">
+                    <h1 className="text-xl font-bold tracking-tight text-foreground/90">Messages</h1>
                     <CreateConversationDialog />
                 </div>
 
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <div className="relative group">
+                    <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
                         type="search"
-                        placeholder="Search messages..."
+                        placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
+                        className="pl-10 h-10 bg-white/40 border-0 shadow-sm rounded-2xl ring-1 ring-white/20 focus-visible:ring-primary/20 focus-visible:bg-white/60 transition-all placeholder:text-muted-foreground/50"
                     />
                 </div>
 
                 <FriendOnline />
 
                 <Tabs defaultValue="all" value={tab} onValueChange={setTab} className="w-full">
-                    <TabsList className="w-full grid grid-cols-3 p-1 h-auto bg-muted/50">
+                    <TabsList className="w-full grid grid-cols-3 p-1 h-9 bg-black/5 rounded-xl">
                         {tabs.map((tabItem) => (
                             <TabsTrigger
                                 key={tabItem.value}
                                 value={tabItem.value}
-                                className="text-xs py-2 data-[state=active]:bg-background"
+                                className="text-[11px] font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all"
                             >
                                 {tabItem.label}
                             </TabsTrigger>
@@ -82,7 +82,7 @@ export function ChatSidebar() {
                 </Tabs>
             </div>
 
-            <div className="flex-1 overflow-hidden pt-4 px-2">
+            <div className="flex-1 overflow-hidden pt-2 px-3 pb-3">
                 <ChatList
                     data={filteredData.length > 0 ? filteredData : undefined}
                     isLoading={isLoading}

@@ -32,4 +32,20 @@ export const uploadService = {
     );
     return res.data;
   },
+
+  uploadFile: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await api.post<{ url: string; publicId: string; resourceType: string }>(
+      "/upload/file",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return res.data;
+  },
 };

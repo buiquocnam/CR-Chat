@@ -11,16 +11,20 @@ export default function RootLayout({
   return (
     <SocketProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex h-svh w-full overflow-hidden">
-          <AppSidebar />
-          <SidebarInset>
-            <div className="flex h-full w-full overflow-hidden">
-              {/* ChatSidebar removed, now handled by AppSidebar */}
-              <main className="flex-1 min-w-0 h-full overflow-hidden bg-background">
-                {children}
-              </main>
+        <div className="relative flex h-screen w-full overflow-hidden bg-background">
+          {/* Fullscreen Container - No rounded corners, no padding */}
+          <div className="flex h-full w-full overflow-hidden bg-white/30 backdrop-blur-2xl">
+
+            {/* Slim Sidebar (Icon Only) */}
+            <div className="hidden md:block w-[72px] lg:w-[80px] h-full flex-shrink-0 border-r border-black/5 bg-white/40 backdrop-blur-xl z-20">
+              <AppSidebar />
             </div>
-          </SidebarInset>
+
+            {/* Main Content Area */}
+            <main className="flex-1 flex min-w-0 h-full overflow-hidden relative">
+              {children}
+            </main>
+          </div>
         </div>
       </SidebarProvider>
     </SocketProvider>

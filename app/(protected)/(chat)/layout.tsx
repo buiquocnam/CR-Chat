@@ -9,10 +9,10 @@ export default function ChatLayout({
 }>) {
     return (
         <div className="flex h-full w-full overflow-hidden">
-            <div className="hidden md:flex h-full w-[380px] lg:w-[420px] flex-shrink-0 border-r bg-background">
+            <div className="hidden md:flex flex-shrink-0 h-full">
                 <ChatSidebar />
             </div>
-            <main className="flex-1 min-w-0 h-full overflow-hidden bg-background">
+            <main className="flex-1 min-w-0 h-full overflow-hidden relative">
                 {children}
             </main>
         </div>

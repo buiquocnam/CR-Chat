@@ -43,11 +43,16 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
   const isUnread = unreadCount > 0;
 
   return (
-    <Card
-      className={`flex flex-row gap-3 p-4 w-full overflow-hidden cursor-pointer hover:bg-accent transition-colors ${isUnread ? 'bg-accent/50' : ''}`}
+    <div
+      className={`group relative flex flex-row gap-3 p-3 mx-1 rounded-2xl cursor-pointer transition-all duration-200 border border-transparent
+        ${isUnread
+          ? 'bg-white shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] ring-1 ring-black/5'
+          : 'hover:bg-white/60 hover:shadow-sm hover:border-black/5'
+        }
+      `}
       onClick={() => onClick(conversation._id)}
     >
-      <div className="w-12 h-12 rounded-full overflow-hidden bg-primary relative flex-shrink-0">
+      <div className="w-12 h-12 rounded-full overflow-hidden relative flex-shrink-0 shadow-sm ring-2 ring-white">
         {displayAvatar ? (
           <Image
             src={displayAvatar}
@@ -58,46 +63,55 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
             className="object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 text-primary/70">
             <span className="text-lg font-bold">
               {displayName[0]?.toUpperCase() || "?"}
             </span>
           </div>
         )}
+        {/* Online Indicator (Hypothetical - assuming conversation object might have it later or we just style the avatar nicely) */}
       </div>
 
-      <div className="flex-1 min-w-0 flex flex-col justify-center">
-        <div className="flex items-center justify-between mb-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+        <div className="flex items-center justify-between min-w-0">
           <div className="flex items-center gap-2 min-w-0">
-            <h3 className={`text-sm truncate ${isUnread ? 'font-bold text-foreground' : 'font-medium text-foreground'}`}>
+            <h3 className={`text-sm truncate ${isUnread ? 'font-bold text-foreground' : 'font-medium text-foreground/90'}`}>
               {displayName}
             </h3>
             {conversation.type === "group" && (
-              <Badge variant="outline" className="text-[10px] h-5 px-1 py-0 border-muted-foreground/30 text-muted-foreground">
+              <Badge variant="secondary" className="text-[10px] h-4 px-1 py-0 bg-secondary text-secondary-foreground hover:bg-secondary">
                 Group
               </Badge>
             )}
           </div>
           {lastMessage && (
-            <span className={`text-xs ${isUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+            <span className={`text-[10px] ${isUnread ? 'text-primary font-bold' : 'text-muted-foreground/60'}`}>
               {smartFormat(lastMessage.createdAt)}
             </span>
           )}
         </div>
 
         <div className="flex items-center justify-between min-w-0">
-          <p className={`text-xs truncate flex-1 ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-            {lastMessage ? `${senderName}: ${lastMessageContent}` : lastMessageContent}
+          <p className={`text-xs truncate flex-1 ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground/80'}`}>
+            {lastMessage ? (
+              <span className="flex items-center gap-1">
+                {senderName === "Me" && <span className="text-xs opacity-70">You:</span>}
+                {senderName !== "Me" && conversation.type === "group" && <span className="text-xs opacity-70">{senderName}:</span>}
+                {lastMessageContent}
+              </span>
+            ) : (
+              lastMessageContent
+            )}
           </p>
 
           {isUnread && (
-            <Badge className="h-5 min-w-5 px-1.5 flex items-center justify-center bg-primary text-primary-foreground text-[10px] rounded-full">
+            <Badge className="h-5 min-w-5 px-1.5 flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold rounded-full shadow-sm shadow-primary/20">
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 });
 

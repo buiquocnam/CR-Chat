@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { smartFormat, isTimeGapLarge } from "@/lib";
 import { useChatScroll } from "@/hooks/message/useChatScroll";
 import { useConversationById } from "@/hooks/chat/useConversations";
+import { cn } from "@/lib/utils";
 
 interface ChatWindowBodyProps {
   conversationId: string;
@@ -148,7 +149,7 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
                 </div>
               )}
 
-              <div id={`message-${message._id}`} className="py-1">
+              <div id={`message-${message._id}`} className={cn("py-1 flex flex-col", isSender ? "items-end" : "items-start")}>
                 <MessageItem
                   isShowName={isShowName}
                   message={message}

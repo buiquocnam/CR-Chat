@@ -10,11 +10,15 @@ import { ChatCacheService } from "@/services/chatCacheService";
 import { useMemo } from "react";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 
+import { useChatStore } from "@/stores/useChatStore";
+
 export const useSendMessage = (conversationId: string) => {
   const emitAsync = useSocketStore((s) => s.emitAsync);
   const queryClient = useQueryClient();
   const currentUserId = useAuthStore((s) => s.user?._id);
   const currentUser = useAuthStore((s) => s.user);
+  const clearReplyingTo = useChatStore((s) => s.clearReplyingTo);
+  const replyingTo = useChatStore((s) => s.replyingTo);
 
   const chatCacheService = useMemo(
     () => new ChatCacheService(queryClient, currentUserId),
@@ -32,6 +36,7 @@ export const useSendMessage = (conversationId: string) => {
 
       // Create optimistic message
       const tempId = uuidv4();
+      
       const optimisticMessage: Message = {
         _id: tempId,
         conversationId: newMessage.conversationId,
@@ -43,10 +48,23 @@ export const useSendMessage = (conversationId: string) => {
         updatedAt: new Date().toISOString(),
         __v: 0,
         status: "sending" as const,
-        replyTo: undefined
+        replyTo: replyingTo ? {
+          _id: replyingTo._id,
+          conversationId: replyingTo.conversationId,
+          senderId: replyingTo.senderId,
+          type: replyingTo.type,
+          content: replyingTo.content,
+          isDeleted: replyingTo.isDeleted,
+          createdAt: replyingTo.createdAt,
+          updatedAt: replyingTo.updatedAt,
+          __v: replyingTo.__v || 0
+        } : undefined
       };
 
       chatCacheService.optimisticMessageAdd(conversationId, optimisticMessage);
+      
+      // Clear reply state immediately on mutate
+      clearReplyingTo();
 
       return { previousMessages, tempId };
     },
