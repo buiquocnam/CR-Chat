@@ -1,6 +1,6 @@
 "use client";
 
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ChatSidebar } from "@/features/chat/components/ChatSidebar";
 import { MessageCircle } from "lucide-react";
 
 export default function Home() {

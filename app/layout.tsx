@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
 import ReactQueryProvider from "@/providers/ReactQueryProvider"
-import { AuthProvider } from "@/providers"
+import { AuthProvider, ThemeProvider } from "@/providers"
 
 export const metadata: Metadata = {
   title: "Moji",
@@ -14,21 +14,28 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
- 
+
 
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <body
-        className="antialiased" 
+        className="antialiased"
       >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <AuthProvider>
             <ReactQueryProvider>
-                <main className="w-full">
+              <main className="w-full">
                 {children}
-                </main>
-              </ReactQueryProvider>
+              </main>
+            </ReactQueryProvider>
           </AuthProvider>
-        <Toaster />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,11 +1,11 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useConversationById } from "@/hooks/chat/useConversations";
-import ChatWindowLayout from "@/components/chat/ChatWindowLayout";
-import ChatWindowHeader from "@/components/chat/ChatWindowHeader";
-import ChatWindowBody from "@/components/message/ChatWindowBody";
-import ChatWindowInput from "@/components/message/ChatWindowInput";
+import { useConversationById } from "@/features/chat/hooks/useConversations";
+import ChatWindowLayout from "@/features/chat/components/ChatWindowLayout";
+import ChatWindowHeader from "@/features/chat/components/ChatWindowHeader";
+import ChatWindowBody from "@/features/message/components/ChatWindowBody";
+import ChatWindowInput from "@/features/message/components/ChatWindowInput";
 import { Loader2 } from "lucide-react";
 
 export default function ChatPage() {

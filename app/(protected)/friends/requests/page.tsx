@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import FriendRequestList from "@/components/friend/FriendRequestList";
+import FriendRequestList from "@/features/friend/components/FriendRequestList";
 
 export default function RequestsPage() {
     const [requestType, setRequestType] = useState<"received" | "sent">("received");

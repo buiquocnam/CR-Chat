@@ -1,6 +1,6 @@
 "use client";
 
-import SearchUser from "@/components/user/SearchUser";
+import SearchUser from "@/features/user/components/SearchUser";
 
 export default function SearchPage() {
     return (
