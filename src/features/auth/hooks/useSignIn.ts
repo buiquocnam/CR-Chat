@@ -24,7 +24,7 @@ export const useSignIn = () => {
       setAccessToken(accessToken);
       await refetch();
       // fetchConversations();
-      router.push("/");
+      router.replace("/");
       toast.success("Chào mừng bạn quay lại với Moji 🎉");
     },
 

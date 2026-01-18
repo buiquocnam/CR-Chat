@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { toast } from "sonner";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -62,6 +63,8 @@ api.interceptors.response.use(
 
     originalRequest._retry = true;
 
+
+
     // ⏳ nếu đang refresh → xếp hàng
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -90,6 +93,7 @@ api.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       useAuthStore.getState().clear();
+      toast.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { authService } from "@/features/auth/services/authService";
 import { useAuthStore } from "@/stores/useAuthStore";
-import {Spinner} from "@/components/ui/spinner"
+import { Spinner } from "@/components/ui/spinner"
 export default function AuthProvider({
   children,
 }: {
@@ -14,8 +15,16 @@ export default function AuthProvider({
   const setAccessToken = useAuthStore((s) => s.setAccessToken);
   const [initialized, setInitialized] = useState(false);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     const initAuth = async () => {
+      // Bỏ quả check auth ở trang public
+      if (["/login", "/signup"].includes(pathname)) {
+        setInitialized(true);
+        return;
+      }
+
       try {
         // 1️⃣ Refresh token
         const accessToken = await authService.refresh();
@@ -33,10 +42,10 @@ export default function AuthProvider({
     };
 
     initAuth();
-  }, [setUser, clear]);
+  }, [setUser, clear, setAccessToken, pathname]);
 
   // ⛔ Chặn render UI khi auth chưa init
-  if (!initialized) return <div className="flex h-screen items-center justify-center"><Spinner className="size-10 animate-spin"/></div>;
+  if (!initialized) return <div className="flex h-screen items-center justify-center"><Spinner className="size-10 animate-spin" /></div>;
 
   return <>{children}</>;
 }
