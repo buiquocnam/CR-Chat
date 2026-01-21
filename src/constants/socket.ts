@@ -8,7 +8,7 @@ export const SOCKET_EVENTS = {
   // Chat Events (Server -> Client)
   NEW_MESSAGE: "new_message",
   MESSAGE_SEEN: "conversation_seen",
-  MESSAGE_DELETED: "message_deleted", // Emitted by messageController
+  MESSAGE_DELETED: "message_deleted", 
   NEW_CONVERSATION: "new_conversation",
 
   // Friend Actions (Client -> Server)
@@ -20,6 +20,8 @@ export const SOCKET_EVENTS = {
   // Friend Events (Server -> Client)
   FRIEND_REQUEST_RECEIVED: "new_friend_request",
   FRIEND_REQUEST_ACCEPTED: "friend_request_accepted",
+  FRIEND_REQUEST_REJECTED: "friend_request_rejected",
+  FRIEND_REQUEST_CANCELED: "friend_request_canceled",
   UNFRIENDED: "unfriended",
 
   // General Events
