@@ -3,8 +3,6 @@
 import { useFriends } from "@/features/friend/hooks/useFriends";
 import { Loader2, MessageSquare, MoreVertical, UserX } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { conversationService } from "@/features/chat/services/conversationService";
-import { useState } from "react";
 import { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,11 +13,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUnfriend } from "@/features/friend/hooks/useUnfriend";
 import { UserItem } from "@/components/shared/UserItem";
+import { conversationService } from "@/features/chat/services/conversationService";
 
 export default function FriendsList({ active }: { active: boolean }) {
   const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useFriends(active);
   const router = useRouter();
-  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
   const { mutate: unfriend } = useUnfriend();
 
   if (!active) {
@@ -29,16 +27,16 @@ export default function FriendsList({ active }: { active: boolean }) {
   const friends: User[] = data?.pages.flatMap((page) => page.data) ?? [];
 
   const handleChat = async (friendId: string) => {
-    if (loadingUserId) return;
-
-    setLoadingUserId(friendId);
     try {
-      const conversation = await conversationService.createPrivateConversation(friendId);
-      router.push(`/${conversation._id}`);
+      const { conversation } = await conversationService.getDirectConversation(friendId);
+      if (conversation) {
+        router.push(`/${conversation._id}`);
+      } else {
+        router.push(`/?userId=${friendId}`);
+      }
     } catch (error) {
-      console.error("Failed to open conversation:", error);
-    } finally {
-      setLoadingUserId(null);
+      // Fallback to new chat view if error
+      router.push(`/?userId=${friendId}`);
     }
   };
 
@@ -68,8 +66,6 @@ export default function FriendsList({ active }: { active: boolean }) {
   return (
     <div className="space-y-4">
       {friends.map((friend) => {
-        const isLoading = loadingUserId === friend._id;
-
         const renderSubText = () => {
           if (friend.isOnline) return <span className="text-xs text-green-500 font-medium">Online</span>;
           if (friend.lastSeen) return <span className="text-xs text-muted-foreground">Last seen {new Date(friend.lastSeen).toLocaleDateString()}</span>;
@@ -77,7 +73,6 @@ export default function FriendsList({ active }: { active: boolean }) {
         }
 
         const renderActions = () => {
-          if (isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
           return (
             <>
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); handleChat(friend._id); }}>

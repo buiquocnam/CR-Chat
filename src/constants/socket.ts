@@ -1,24 +1,28 @@
 export const SOCKET_EVENTS = {
-  // Chat events
+  // Chat Actions (Client -> Server)
+  JOIN_CONVERSATION: "join_conversation",
+  LEAVE_CONVERSATION: "leave_conversation",
+  MARK_SEEN: "seen_message",
+  CREATE_CONVERSATION: "create_conversation",
+
+  // Chat Events (Server -> Client)
   NEW_MESSAGE: "new_message",
-  MESSAGE_SEEN: "message_seen",
-  MESSAGE_DELETED: "message_deleted",
+  MESSAGE_SEEN: "conversation_seen",
+  MESSAGE_DELETED: "message_deleted", // Emitted by messageController
   NEW_CONVERSATION: "new_conversation",
-  SEND_MESSAGE: "send_message",
-  MARK_SEEN: "mark_seen",
-  DELETE_MESSAGE: "delete_message",
 
-  // Friend events
-  FRIEND_REQUEST_SENT: "friend_request_sent",
-  FRIEND_REQUEST_RECEIVED: "friend_request_received",
+  // Friend Actions (Client -> Server)
+  SEND_FRIEND_REQUEST: "send_friend_request",
+  ACCEPT_FRIEND_REQUEST: "accept_friend_request",
+  CANCEL_FRIEND_REQUEST: "cancel_friend_request",
+  UNFRIEND: "unfriend",
+
+  // Friend Events (Server -> Client)
+  FRIEND_REQUEST_RECEIVED: "new_friend_request",
   FRIEND_REQUEST_ACCEPTED: "friend_request_accepted",
-  FRIEND_REQUEST_REJECTED: "friend_request_rejected",
-  FRIEND_REQUEST_CANCELED: "friend_request_canceled",
-  FRIEND_REMOVED: "friend_removed",
   UNFRIENDED: "unfriended",
-  USER_STATUS_CHANGED: "user_status_changed",
 
-  // General events
+  // General Events
   CONNECT: "connect",
   DISCONNECT: "disconnect",
   USER_ONLINE: "user_online",

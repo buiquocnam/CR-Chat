@@ -10,9 +10,8 @@ import { UserItem } from "@/components/shared/UserItem";
 
 interface FriendRequestItem {
   _id: string;
-  user: User | null;
-  receiver?: User;
-  sender?: User;
+  from: User | string;
+  to: User | string;
   status: string;
   createdAt: string;
 }
@@ -32,17 +31,17 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const requests: FriendRequestItem[] = type === "received"
-    ? (data?.received?.data ?? [])
-    : (data?.sent?.data ?? []);
+    ? (data?.received ?? [])
+    : (data?.sent ?? []);
 
   if (!active) {
     return null;
   }
 
-  const handleAccept = async (requestId: string) => {
+  const handleAccept = async (requestId: string, userId: string) => {
     setProcessingId(requestId);
     try {
-      await acceptMutation.mutateAsync(requestId);
+      await acceptMutation.mutateAsync({ requestId, userId });
     } catch (error) {
       console.error("Failed to accept:", error);
     } finally {
@@ -50,10 +49,10 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
     }
   };
 
-  const handleReject = async (requestId: string) => {
+  const handleReject = async (requestId: string, userId: string) => {
     setProcessingId(requestId);
     try {
-      await rejectMutation.mutateAsync(requestId);
+      await rejectMutation.mutateAsync({ requestId, userId });
     } catch (error) {
       console.error("Failed to reject:", error);
     } finally {
@@ -61,10 +60,10 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
     }
   };
 
-  const handleCancel = async (requestId: string) => {
+  const handleCancel = async (requestId: string, userId: string) => {
     setProcessingId(requestId);
     try {
-      await cancelMutation.mutateAsync(requestId);
+      await cancelMutation.mutateAsync({ requestId, userId });
     } catch (error) {
       console.error("Failed to cancel:", error);
     } finally {
@@ -92,11 +91,11 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
     <div className="space-y-4">
       {requests.map((request) => {
         const isProcessing = processingId === request._id;
-        const displayUser = type === "received"
-          ? (request.sender || request.user)
-          : (request.receiver || request.user);
+        // received: from is User, to is ID
+        // sent: to is User, from is ID
+        const displayUser = (type === "received" ? request.from : request.to) as User;
 
-        if (!displayUser) return null;
+        if (!displayUser || typeof displayUser === 'string') return null;
 
         const renderSubText = () => (
           <span className="text-xs text-muted-foreground">
@@ -110,7 +109,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
               <>
                 <Button
                   size="sm"
-                  onClick={() => handleAccept(request._id)}
+                  onClick={() => handleAccept(request._id, displayUser._id)}
                   disabled={isProcessing}
                   className="gap-2 rounded-full"
                 >
@@ -120,7 +119,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={() => handleReject(request._id)}
+                  onClick={() => handleReject(request._id, displayUser._id)}
                   disabled={isProcessing}
                   className="gap-2 rounded-full"
                 >
@@ -132,7 +131,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
               <Button
                 size="sm"
                 variant="destructive"
-                onClick={() => handleCancel(request._id)}
+                onClick={() => handleCancel(request._id, displayUser._id)}
                 disabled={isProcessing}
                 className="gap-2 rounded-full"
               >

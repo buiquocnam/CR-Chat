@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useState, useRef, KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,16 +16,19 @@ import CustomEmojiPicker from "./EmojiPicker";
 import { cn } from "@/lib/utils";
 
 interface ChatWindowInputProps {
-  conversationId: string;
+  conversationId?: string;
+  receiverId?: string;
+  onMessageSent?: (conversationId: string) => void;
 }
 
-export default function ChatWindowInput({ conversationId }: ChatWindowInputProps) {
+export default function ChatWindowInput({ conversationId, receiverId, onMessageSent }: ChatWindowInputProps) {
   const [content, setContent] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const router = useRouter();
   const { mutate: sendMessage, isPending } = useSendMessage(conversationId);
   const { replyingTo, clearReplyingTo } = useChatStore();
 
@@ -32,12 +37,21 @@ export default function ChatWindowInput({ conversationId }: ChatWindowInputProps
 
     const messageData: SendMessage = {
       conversationId,
-      type: "text",
+      recipientId: receiverId, // Pass receiverId if present (and no conversationId)
       content: content.trim(),
-      replyTo: replyingTo?._id,
     };
 
-    sendMessage(messageData);
+    sendMessage(messageData, {
+      onSuccess: (data: any) => {
+        if (data.conversationId && onMessageSent) {
+          onMessageSent(data.conversationId);
+        }
+        // If we were in "new chat" mode (no conversationId), redirect to the new conversation
+        if (!conversationId && data.message?.conversationId) {
+          router.push(`/${data.message.conversationId}`);
+        }
+      }
+    });
 
     setContent("");
     inputRef.current?.focus();
@@ -55,16 +69,19 @@ export default function ChatWindowInput({ conversationId }: ChatWindowInputProps
       setIsUploading(true);
       const result = await uploadService.uploadFile(file);
 
-      const type = result.resourceType === "image" ? "image" : "file";
-
       sendMessage({
         conversationId,
-        type,
+        recipientId: receiverId,
         content: result.url,
-        replyTo: replyingTo?._id,
+        imgUrl: result.resourceType === "image" ? result.url : undefined
+      }, {
+        onSuccess: (data: any) => {
+          if (data.conversationId && onMessageSent) {
+            onMessageSent(data.conversationId);
+          }
+        }
       });
 
-      // Reset file input
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Upload failed", error);
@@ -113,10 +130,10 @@ export default function ChatWindowInput({ conversationId }: ChatWindowInputProps
             <div className="w-1 h-8 bg-primary rounded-full shrink-0" />
             <div className="flex flex-col overflow-hidden">
               <span className="text-xs font-bold text-primary truncate">
-                Replying to {replyingTo.senderId.username}
+                Replying to {(replyingTo.senderId as any).displayName || (replyingTo.senderId as any).username || "Unknown"}
               </span>
               <span className="text-sm text-muted-foreground truncate">
-                {replyingTo.type === "text" ? replyingTo.content : `[${replyingTo.type}]`}
+                {replyingTo.imgUrl ? "Image" : replyingTo.content}
               </span>
             </div>
           </div>

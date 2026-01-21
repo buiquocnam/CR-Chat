@@ -12,8 +12,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useCreateConversation } from "@/features/chat/hooks/useCreateConversation";
 import { useSearchUsers } from "@/features/user/hooks/useSearchUsers";
+import { useSocketStore } from "@/stores/useSocketStore";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { QUERY_KEYS } from "@/constants/queryKeys";
 import { Check, Plus, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,17 +27,20 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 export function CreateConversationDialog() {
     const [open, setOpen] = useState(false);
-    const [type, setType] = useState<"private" | "group">("private");
+    const [type, setType] = useState<"direct" | "group">("direct");
     const [name, setName] = useState("");
     const [query, setQuery] = useState("");
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
     const debouncedQuery = useDebounce(query, 300);
     const { data: searchResults } = useSearchUsers(debouncedQuery);
-    const { mutate: createConversation, isPending } = useCreateConversation();
+    const emitAsync = useSocketStore((state) => state.emitAsync);
+    const [isPending, setIsPending] = useState(false);
+    const router = useRouter();
+    const queryClient = useQueryClient();
 
     const handleSelectUser = (userId: string) => {
-        if (type === "private") {
+        if (type === "direct") {
             setSelectedUsers([userId]);
         } else {
             if (selectedUsers.includes(userId)) {
@@ -44,24 +51,32 @@ export function CreateConversationDialog() {
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (selectedUsers.length === 0) return;
 
-        createConversation(
-            {
+        try {
+            setIsPending(true);
+            const conversation = await emitAsync("create_conversation", {
                 type,
                 memberIds: selectedUsers,
                 name: type === "group" ? name : undefined,
-            },
-            {
-                onSuccess: () => {
-                    setOpen(false);
-                    setSelectedUsers([]);
-                    setName("");
-                    setQuery("");
-                },
-            }
-        );
+            });
+
+            // Invalidate conversations list locally although socket event should handle it if listening
+            // But confirming via query invalidation is safe
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.CONVERSATIONS] });
+
+            setOpen(false);
+            setSelectedUsers([]);
+            setName("");
+            setQuery("");
+
+            router.push(`/${conversation._id}`);
+        } catch (error: any) {
+            toast.error(error?.message || "Không thể tạo cuộc trò chuyện");
+        } finally {
+            setIsPending(false);
+        }
     };
 
     const users = searchResults?.pages.flatMap((page) => page.data) || [];
@@ -78,12 +93,12 @@ export function CreateConversationDialog() {
                     <DialogTitle>Tạo cuộc trò chuyện mới</DialogTitle>
                 </DialogHeader>
 
-                <Tabs defaultValue="private" onValueChange={(v) => {
-                    setType(v as "private" | "group");
+                <Tabs defaultValue="direct" onValueChange={(v) => {
+                    setType(v as "direct" | "group");
                     setSelectedUsers([]);
                 }}>
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="private">Cá nhân</TabsTrigger>
+                        <TabsTrigger value="direct">Cá nhân</TabsTrigger>
                         <TabsTrigger value="group">Nhóm</TabsTrigger>
                     </TabsList>
 
@@ -132,11 +147,11 @@ export function CreateConversationDialog() {
                                     onClick={() => handleSelectUser(user._id)}
                                 >
                                     <Avatar>
-                                        <AvatarImage src={user.avatar} />
-                                        <AvatarFallback>{user.username[0]}</AvatarFallback>
+                                        <AvatarImage src={user.avatarUrl} />
+                                        <AvatarFallback>{(user.displayName || user.username)[0].toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1">
-                                        <p className="font-medium">{user.username}</p>
+                                        <p className="font-medium">{user.displayName || user.username}</p>
                                         <p className="text-sm text-muted-foreground">{user.email}</p>
                                     </div>
                                     {selectedUsers.includes(user._id) && (

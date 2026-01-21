@@ -27,9 +27,10 @@ export const useAcceptFriendRequest = () => {
   const friendCacheService = useMemo(() => new FriendCacheService(queryClient), [queryClient]);
 
   return useMutation({
-    mutationFn: (requestId: string) => emitAsync("accept_friend_request", { requestId }),
-    onSuccess: () => {
+    mutationFn: ({ requestId }: { requestId: string, userId: string }) => emitAsync("accept_friend_request", { requestId }),
+    onSuccess: (_, variables) => {
       toast.success("Đã chấp nhận lời mời kết bạn!");
+      friendCacheService.updateSearchUserRelationship(variables.userId, 'friend');
       friendCacheService.handleAccepted();
     },
     onError: (error: any) => {
@@ -44,9 +45,10 @@ export const useRejectFriendRequest = () => {
   const friendCacheService = useMemo(() => new FriendCacheService(queryClient), [queryClient]);
 
   return useMutation({
-    mutationFn: (requestId: string) => emitAsync("reject_friend_request", { requestId }),
-    onSuccess: () => {
+    mutationFn: ({ requestId, userId }: { requestId: string, userId: string }) => emitAsync("cancel_friend_request", { requestId }),
+    onSuccess: (_, variables) => {
       toast.info("Đã từ chối lời mời kết bạn");
+      friendCacheService.updateSearchUserRelationship(variables.userId, 'none');
       friendCacheService.handleRejected();
     },
     onError: (error: any) => {

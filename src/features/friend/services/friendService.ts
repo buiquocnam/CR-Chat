@@ -4,32 +4,20 @@ import { CursorPaginationParams } from "@/types/pagination";
 import { buildCursorPaginationQuery, buildSearchQuery } from "@/lib/pagination";
 
 export interface FriendRequestsResponse {
-  sent: {
-    data: Array<{
-      _id: string;
-      user: User;
-      status: string;
-      createdAt: string;
-    }>;
-    meta: {
-      limit: number;
-      hasNext: boolean;
-      nextCursor: string | null;
-    };
-  };
-  received: {
-    data: Array<{
-      _id: string;
-      user: User;
-      status: string;
-      createdAt: string;
-    }>;
-    meta: {
-      limit: number;
-      hasNext: boolean;
-      nextCursor: string | null;
-    };
-  };
+  sent: Array<{
+    _id: string;
+    from: string;
+    to: User;
+    status: string;
+    createdAt: string;
+  }>;
+  received: Array<{
+    _id: string;
+    from: User;
+    to: string;
+    status: string;
+    createdAt: string;
+  }>;
 }
 
 export const friendService = {
@@ -69,22 +57,23 @@ export const friendService = {
   },
 
   sendRequest: async (receiverId: string) => {
-    const res = await apiClient.post("/friends/request", { receiverId });
+    // Backend expects { to: string, message?: string }
+    const res = await apiClient.post("/friends/requests", { to: receiverId });
     return res.data;
   },
 
   acceptRequest: async (requestId: string) => {
-    const res = await apiClient.post(`/friends/request/${requestId}/accept`);
+    const res = await apiClient.post(`/friends/requests/${requestId}/accept`);
     return res.data;
   },
 
   rejectRequest: async (requestId: string) => {
-    const res = await apiClient.post(`/friends/request/${requestId}/reject`);
+    const res = await apiClient.post(`/friends/requests/${requestId}/decline`);
     return res.data;
   },
 
   cancelRequest: async (requestId: string) => {
-    const res = await apiClient.post(`/friends/request/${requestId}/cancel`);
+    const res = await apiClient.post(`/friends/requests/${requestId}/decline`);
     return res.data;
   },
 

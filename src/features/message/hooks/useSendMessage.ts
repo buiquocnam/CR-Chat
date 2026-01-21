@@ -11,9 +11,10 @@ import { useMemo } from "react";
 import { QUERY_KEYS } from "@/constants/queryKeys";
 
 import { useChatStore } from "@/stores/useChatStore";
+import { messageService } from "@/features/message/services/messageService";
 
-export const useSendMessage = (conversationId: string) => {
-  const emitAsync = useSocketStore((s) => s.emitAsync);
+
+export const useSendMessage = (conversationId?: string) => {
   const queryClient = useQueryClient();
   const currentUserId = useAuthStore((s) => s.user?._id);
   const currentUser = useAuthStore((s) => s.user);
@@ -26,9 +27,23 @@ export const useSendMessage = (conversationId: string) => {
   );
 
   return useMutation({
-    mutationFn: (data: SendMessage) => emitAsync(SOCKET_EVENTS.SEND_MESSAGE, data),
+    mutationFn: (data: SendMessage) => {
+        // Use API instead of Socket
+        return messageService.sendMessage({
+            ...data,
+            conversationId // Pass conversationId as well
+        });
+    },
 
     onMutate: async (newMessage) => {
+      // If no conversationId, we cannot optimistically update correctly yet
+      // unless we assume a temp ID for the conversation, which is complex.
+      // So we skip optimistic update for first message.
+      if (!conversationId) {
+          clearReplyingTo();
+          return { previousMessages: null, tempId: null };
+      }
+
       const queryKey = [QUERY_KEYS.MESSAGES, conversationId];
       await queryClient.cancelQueries({ queryKey });
 
@@ -37,28 +52,16 @@ export const useSendMessage = (conversationId: string) => {
       // Create optimistic message
       const tempId = uuidv4();
       
-      const optimisticMessage: Message = {
+        const optimisticMessage: Message = {
         _id: tempId,
-        conversationId: newMessage.conversationId,
+        conversationId: conversationId,
         senderId: currentUser!,
-        type: newMessage.type,
         content: newMessage.content,
+        imgUrl: newMessage.imgUrl,
         isDeleted: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         __v: 0,
-        status: "sending" as const,
-        replyTo: replyingTo ? {
-          _id: replyingTo._id,
-          conversationId: replyingTo.conversationId,
-          senderId: replyingTo.senderId,
-          type: replyingTo.type,
-          content: replyingTo.content,
-          isDeleted: replyingTo.isDeleted,
-          createdAt: replyingTo.createdAt,
-          updatedAt: replyingTo.updatedAt,
-          __v: replyingTo.__v || 0
-        } : undefined
       };
 
       chatCacheService.optimisticMessageAdd(conversationId, optimisticMessage);
@@ -70,15 +73,27 @@ export const useSendMessage = (conversationId: string) => {
     },
 
     onError: (err, newMessage, context) => {
-      if (context?.tempId) {
+      if (context?.tempId && conversationId) {
         chatCacheService.optimisticMessageError(conversationId, context.tempId);
       }
     },
 
-    onSuccess: (data: Message, newMessage, context) => {
-       if (context?.tempId) {
-         chatCacheService.optimisticMessageSuccess(conversationId, context.tempId, data);
+    onSuccess: (response, newMessage, context) => { // data: { message, conversationId } or { message } from API
+       // API returns { message: ... }
+       const realMessage = response.message;
+       
+       if (context?.tempId && conversationId) {
+         chatCacheService.optimisticMessageSuccess(conversationId, context.tempId, realMessage);
        }
+       
+       // Handle conversation list update
+       // For sender, unread count is 0. Backend socket will sync others.
+       // We pass a dummy or actual unreadCounts if API returns it, or empty.
+       // Note: response might need to be checked for unreadCounts structure
+       chatCacheService.handleNewMessage({ 
+          message: realMessage, 
+          unreadCounts: (response as any).unreadCounts || {} 
+       }, conversationId);
     }
   });
 };

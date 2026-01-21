@@ -2,13 +2,19 @@ import { CursorPaginatedResponse } from "./pagination";
 
 export interface User {
   _id: string;
-  email?: string;
   username: string;
-  avatar?: string;
-  isOnline?: boolean;
-  lastSeen?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  avatarId?: string;
+  bio?: string;     
+  phone?: string;
+  isOnline?: boolean;     // Computed/Status
+  lastSeen?: Date;        // Computed/Status
+  createdAt: string;      // ISO string
+  updatedAt: string;      // ISO string
+  
+  // Relationship status (likely computed or from separate query)
   relationship?: 'friend' | 'request_sent' | 'request_received' | 'none';
   friendRequestId?: string;
 }

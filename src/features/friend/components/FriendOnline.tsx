@@ -6,30 +6,34 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { User } from "@/types/user";
-import { useSocketStore } from "@/stores/useSocketStore";
+import { conversationService } from "@/features/chat/services/conversationService";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export default function FriendOnline() {
   const { data, isLoading } = useOnlineFriends();
   const router = useRouter();
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
-  const emitAsync = useSocketStore((state) => state.emitAsync);
 
   // Flatten all pages to get all online friends
-  const onlineUsers = data?.pages.flatMap((page) => page.data) ?? [];
+  const { user: currentUser } = useAuthStore();
+  const onlineUsersData = data?.pages.flatMap((page) => page.data) ?? [];
+  const onlineUsers = onlineUsersData.filter(user => user._id !== currentUser?._id);
   const onlineCount = onlineUsers.length;
 
   const handleFriendClick = async (friend: User) => {
     if (loadingUserId) return;
-    
+
     setLoadingUserId(friend._id);
     try {
-      const conversation = await emitAsync("create_conversation", {
-          type: 'private',
-          memberIds: [friend._id]
-      });
-      router.push(`/${conversation._id}`);
+      const { conversation } = await conversationService.getDirectConversation(friend._id);
+      if (conversation) {
+        router.push(`/${conversation._id}`);
+      } else {
+        router.push(`/?userId=${friend._id}`);
+      }
     } catch (error) {
       console.error("Failed to open conversation:", error);
+      router.push(`/?userId=${friend._id}`);
     } finally {
       setLoadingUserId(null);
     }
@@ -67,11 +71,11 @@ export default function FriendOnline() {
         <h2 className="text-lg font-semibold">Friends Online</h2>
         <Badge variant="default">{onlineCount} online</Badge>
       </div>
-      
+
       <div className="flex gap-4 flex-wrap">
         {onlineUsers.map((user) => {
           const isLoading = loadingUserId === user._id;
-          
+
           return (
             <div
               key={user._id}
@@ -80,10 +84,10 @@ export default function FriendOnline() {
             >
               <div className="relative">
                 <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center relative group-hover:ring-2 group-hover:ring-primary transition-all">
-                  {user.avatar ? (
+                  {user.avatarUrl ? (
                     <Image
-                      src={user.avatar}
-                      alt={user.username}
+                      src={user.avatarUrl}
+                      alt={user.displayName || user.username}
                       width={64}
                       height={64}
                       priority
@@ -92,7 +96,7 @@ export default function FriendOnline() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-primary text-primary-foreground font-semibold text-lg">
-                      {user.username?.charAt(0).toUpperCase() || "?"}
+                      {(user.displayName || user.username)?.charAt(0).toUpperCase() || "?"}
                     </div>
                   )}
                   {/* Online indicator */}
@@ -105,7 +109,7 @@ export default function FriendOnline() {
                 )}
               </div>
               <p className="mt-2 text-center text-sm font-medium max-w-[64px] truncate">
-                {user.username}
+                {user.displayName || user.username}
               </p>
             </div>
           );

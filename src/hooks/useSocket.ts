@@ -53,6 +53,28 @@ export const useSocket = () => {
           isInitializing.current = false;
         });
 
+        s.on("connect_error", async (err) => {
+          console.error("Socket connect_error:", err.message);
+          isInitializing.current = false; // Allow retries
+
+          if (err.message.includes("Unauthorized") || err.message.includes("jwt expired")) {
+            try {
+              // Try to refresh token
+              const { authService } = await import("@/features/auth/services/authService");
+              const newToken = await authService.refresh();
+              
+              if (newToken) {
+                 useAuthStore.getState().setAccessToken(newToken);
+                 // The useEffect will re-run because accessToken changed
+              }
+            } catch (refreshErr) {
+               console.error("Socket refresh token failed", refreshErr);
+               // Force logout if refresh fails
+               useAuthStore.getState().clear();
+            }
+          }
+        });
+
       } catch (err) {
         console.error(err);
         isInitializing.current = false;

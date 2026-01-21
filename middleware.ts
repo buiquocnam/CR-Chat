@@ -5,7 +5,7 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ❌ bỏ qua các route public
-  const publicRoutes = ["/login", "/register"];
+  const publicRoutes = ["/login", "/signup"];
 
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();

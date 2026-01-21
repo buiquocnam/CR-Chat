@@ -46,7 +46,7 @@ export default function SearchUserDialog({ open, onOpenChange }: SearchUserDialo
 
   const handleCancelRequest = (requestId: string, userId: string) => {
     setPendingUserId(userId);
-    cancelRequestMutation.mutate(requestId, {
+    cancelRequestMutation.mutate({ requestId, userId }, {
       onSettled: () => {
         setPendingUserId(null);
       }
@@ -92,16 +92,16 @@ export default function SearchUserDialog({ open, onOpenChange }: SearchUserDialo
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted cursor-pointer" >
-                      {user.avatar ? (
-                        <Image src={user.avatar} alt={user.username} fill className="object-cover" />
+                      {user.avatarUrl ? (
+                        <Image src={user.avatarUrl} alt={user.displayName} fill className="object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-bold">
-                          {user.username?.[0]?.toUpperCase()}
+                          {(user.displayName || user.username)?.[0]?.toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div>
-                      <p className="font-medium">{user.username}</p>
+                      <p className="font-medium">{user.displayName || user.username}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>

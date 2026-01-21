@@ -26,7 +26,9 @@ import {
 export function ProfileDialog() {
     const { user } = useAuthStore();
     const [open, setOpen] = useState(false);
-    const [username, setUsername] = useState(user?.username || "");
+    const [displayName, setDisplayName] = useState(user?.displayName || user?.username || "");
+    const [bio, setBio] = useState(user?.bio || "");
+    const [phone, setPhone] = useState(user?.phone || "");
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +47,7 @@ export function ProfileDialog() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         updateProfile(
-            { username, avatar: file || undefined },
+            { displayName: displayName, avatar: file || undefined, bio, phone },
             {
                 onSuccess: () => {
                     setOpen(false);
@@ -63,8 +65,8 @@ export function ProfileDialog() {
                     <DialogTrigger asChild>
                         <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden">
                             <Avatar className="h-full w-full">
-                                <AvatarImage src={user?.avatar} alt={user?.username} className="object-cover" />
-                                <AvatarFallback className="text-sm font-medium">{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                <AvatarImage src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} alt={user?.displayName} className="object-cover" />
+                                <AvatarFallback className="text-sm font-medium">{(user?.displayName || user?.username)?.[0]?.toUpperCase()}</AvatarFallback>
                             </Avatar>
                         </Button>
                     </DialogTrigger>
@@ -87,9 +89,9 @@ export function ProfileDialog() {
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <Avatar className="h-24 w-24">
-                                    <AvatarImage src={preview || user?.avatar} className="object-cover" />
+                                    <AvatarImage src={preview || user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`} className="object-cover" />
                                     <AvatarFallback className="text-xl">
-                                        {user?.username?.[0]?.toUpperCase()}
+                                        {(user?.displayName || user?.username)?.[0]?.toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -111,8 +113,63 @@ export function ProfileDialog() {
                             </Label>
                             <Input
                                 id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                value={user?.username || ""}
+                                disabled
+                                className="col-span-3 bg-muted"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="email" className="text-right">
+                                Email
+                            </Label>
+                            <Input
+                                id="email"
+                                value={user?.email || ""}
+                                disabled
+                                className="col-span-3 bg-muted"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="joined" className="text-right">
+                                Tham gia
+                            </Label>
+                            <Input
+                                id="joined"
+                                value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : ""}
+                                disabled
+                                className="col-span-3 bg-muted"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="displayName" className="text-right">
+                                Tên hiển thị
+                            </Label>
+                            <Input
+                                id="displayName"
+                                value={displayName}
+                                onChange={(e) => setDisplayName(e.target.value)}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="bio" className="text-right">
+                                Tiểu sử
+                            </Label>
+                            <Input
+                                id="bio"
+                                value={bio}
+                                onChange={(e) => setBio(e.target.value)}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="phone" className="text-right">
+                                Số điện thoại
+                            </Label>
+                            <Input
+                                id="phone"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
                                 className="col-span-3"
                             />
                         </div>
@@ -124,6 +181,6 @@ export function ProfileDialog() {
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }

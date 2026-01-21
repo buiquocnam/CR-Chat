@@ -13,8 +13,9 @@ export const useUnfriend = () => {
 
   return useMutation({
     mutationFn: (friendId: string) => emitAsync("unfriend", { friendId }),
-    onSuccess: () => {
+    onSuccess: (_, friendId) => {
       toast.success("Đã hủy kết bạn!");
+      friendCacheService.updateSearchUserRelationship(friendId, 'none');
       friendCacheService.handleUnfriended();
     },
     onError: (error: any) => {

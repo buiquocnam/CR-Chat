@@ -12,21 +12,24 @@ import { smartFormat, isTimeGapLarge } from "@/lib";
 import { useChatScroll } from "@/features/message/hooks/useChatScroll";
 import { useConversationById } from "@/features/chat/hooks/useConversations";
 import { cn } from "@/lib/utils";
+import { User } from "@/types/user";
 
 interface ChatWindowBodyProps {
-  conversationId: string;
+  conversationId?: string;
 }
 
 export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) {
   // 1. Data Fetching
-  const { data: conversation } = useConversationById(conversationId);
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useMessages(conversationId);
+  const { data: conversation } = useConversationById(conversationId || "");
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useMessages(conversationId || "");
   const currentUserId = useAuthStore((s) => s.user?._id);
 
-  // 2. Flatten Messages (Order: Newest First from API, we want Oldest First for list)
-  const allMessages = useMemo(() =>
-    data?.pages.flatMap((page) => page.data).reverse() ?? []
-    , [data]);
+  // 2. Flatten Messages & Sort Chronologically (Oldest First)
+  const allMessages = useMemo(() => {
+    const flattened = data?.pages.flatMap((page) => page.data) ?? [];
+    // Sort logic to ensure correct order regardless of pagination direction
+    return flattened.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }, [data]);
 
   // 3. Scroll Logic (Refactored)
   const {
@@ -35,13 +38,13 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
     showNewMessageNotification,
     handleScrollToBottom
   } = useChatScroll({
-    conversationId,
+    conversationId: conversationId || "",
     data,
     isLoading,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    lastReadMessageId: conversation?.lastReadMessageId,
+    // lastReadMessageId removed
     currentUserId
   });
 
@@ -56,17 +59,26 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
   // 5. Mark Messages as Seen Logic
   const { markAsSeen } = useMarkMessageAsSeen();
   useEffect(() => {
-    if (allMessages.length === 0 || !currentUserId) return;
+    if (allMessages.length === 0 || !currentUserId || !conversationId) return;
 
     const lastMessage = allMessages[allMessages.length - 1];
-    if (lastMessage.senderId._id !== currentUserId) {
-      // Defer to avoid "flushSync" or state update during render/mount cycle
-      const timer = setTimeout(() => {
-        markAsSeen(conversationId, lastMessage._id);
-      }, 0);
-      return () => clearTimeout(timer);
+
+    const lastSenderId = (lastMessage.senderId as any)._id || lastMessage.senderId;
+
+    const myUnreadCount = conversation?.unreadCounts?.[currentUserId] ?? 0;
+
+    if (lastSenderId !== currentUserId && myUnreadCount > 0) {
+      markAsSeen(conversationId, lastMessage._id);
     }
-  }, [allMessages, currentUserId, conversationId, markAsSeen]);
+  }, [allMessages, currentUserId, conversationId, markAsSeen, conversation]);
+
+  if (!conversationId) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-muted-foreground">Start a new conversation!</p>
+      </div>
+    );
+  }
 
   // 6. Render States
   if (isLoading && !data) {
@@ -112,16 +124,25 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
           const nextMessage = index < allMessages.length - 1 ? allMessages[index + 1] : null;
           const previousMessage = index > 0 ? allMessages[index - 1] : null;
 
-          const isSender = message.senderId._id === currentUserId;
-          const showAvatar = !nextMessage || nextMessage.senderId._id !== message.senderId._id;
-          const isShowName = !previousMessage || previousMessage.senderId._id !== message.senderId._id;
-          const showTimeDivider = !previousMessage || isTimeGapLarge(previousMessage.createdAt, message.createdAt);
+          // Handle both populated User object and raw ID string
+          const senderIdFromMessage = typeof message.senderId === 'string'
+            ? message.senderId
+            : (message.senderId as User)._id;
 
-          // Logic for unread divider
-          const isFirstUnread = conversation?.lastReadMessageId &&
-            message._id > conversation.lastReadMessageId &&
-            (!previousMessage || previousMessage._id <= conversation.lastReadMessageId) &&
-            !isSender;
+          // Robust comparison converting to string to avoid ObjectId vs string mismatches
+          const isSender = String(senderIdFromMessage) === String(currentUserId);
+
+          const nextSenderId = nextMessage
+            ? (typeof nextMessage.senderId === 'string' ? nextMessage.senderId : (nextMessage.senderId as User)._id)
+            : null;
+
+          const prevSenderId = previousMessage
+            ? (typeof previousMessage.senderId === 'string' ? previousMessage.senderId : (previousMessage.senderId as User)._id)
+            : null;
+
+          const showAvatar = !nextMessage || nextSenderId !== senderIdFromMessage;
+          const isShowName = !previousMessage || prevSenderId !== senderIdFromMessage;
+          const showTimeDivider = !previousMessage || isTimeGapLarge(previousMessage.createdAt, message.createdAt);
 
           return (
             <div
@@ -141,14 +162,6 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
                 </div>
               )}
 
-              {isFirstUnread && (
-                <div className="flex items-center gap-2 my-4 px-4">
-                  <div className="h-[1px] flex-1 bg-red-500/50"></div>
-                  <span className="text-xs font-semibold text-red-500">Tin nhắn mới</span>
-                  <div className="h-[1px] flex-1 bg-red-500/50"></div>
-                </div>
-              )}
-
               <div id={`message-${message._id}`} className={cn("py-1 flex flex-col", isSender ? "items-end" : "items-start")}>
                 <MessageItem
                   isShowName={isShowName}
@@ -156,7 +169,8 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
                   showAvatar={showAvatar}
                   showTime={true}
                   isSender={isSender}
-                  seenBy={message.seenBy}
+                  // Only show seenBy for the last message if available in conversation
+                  seenBy={String(message._id) === String(conversation?.lastMessage?._id) ? conversation?.seenBy : undefined}
                 />
               </div>
             </div>
@@ -165,23 +179,25 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
       </div>
 
       {/* Scroll Anchor */}
-      <div ref={messagesEndRef} className="h-1" />
+      < div ref={messagesEndRef} className="h-1" />
 
       {/* New Message Notification Button */}
-      {showNewMessageNotification && (
-        <div className="sticky bottom-4 flex justify-center z-20">
-          <Button
-            onClick={handleScrollToBottom}
-            size="sm"
-            className="rounded-full shadow-lg"
-            variant="default"
-          >
-            <ChevronDown className="h-4 w-4 mr-2" />
-            Có tin nhắn mới
-          </Button>
-        </div>
-      )}
-    </div>
+      {
+        showNewMessageNotification && (
+          <div className="sticky bottom-4 flex justify-center z-20">
+            <Button
+              onClick={handleScrollToBottom}
+              size="sm"
+              className="rounded-full shadow-lg"
+              variant="default"
+            >
+              <ChevronDown className="h-4 w-4 mr-2" />
+              Có tin nhắn mới
+            </Button>
+          </div>
+        )
+      }
+    </div >
   );
 }
 

@@ -36,7 +36,7 @@ export const useChatScroll = ({
     const container = containerRef.current;
     
     // Dung sai tăng lên một chút để nhạy hơn (ví dụ 100px)
-    const threshold = 100; 
+    const threshold = 500; 
     const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
     return distanceToBottom < threshold;
   }, []);
@@ -105,10 +105,16 @@ export const useChatScroll = ({
     if (hasNewMessages) {
        const latestMessage = data?.pages[0]?.data[0];
        
-       const isMyMessage = currentUserId && latestMessage?.senderId?._id === currentUserId;
+       // Handle senderId being object or string
+       const senderId = typeof latestMessage?.senderId === 'string'
+          ? latestMessage.senderId
+          : latestMessage?.senderId?._id;
+
+       const isMyMessage = currentUserId && senderId === currentUserId;
 
        if (isMyMessage || isNearBottom()) {
-          scrollToBottom(true);
+          // Force scroll with slight delay to ensure rendering
+          setTimeout(() => scrollToBottom(true), 100);
           setShowNewMessageNotification(false);
        } else {
           setShowNewMessageNotification(true);

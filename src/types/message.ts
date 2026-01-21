@@ -1,40 +1,26 @@
 import { User } from "./user";
 import { CursorPaginatedResponse } from "./pagination";
-
-export interface MessageReplyTo {
-  _id: string;
-  conversationId: string;
-  senderId: User;
-  type: string;
-  content: string;
-  isDeleted: boolean;
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-}
-
-export type MessageStatus = "sending" | "sent" | "delivered" | "read" | "failed";
+import { Conversation } from "./conversation";
 
 export interface Message {
   _id: string;
   conversationId: string;
-  senderId: User;
-  type: "text" | "image" | "file";
+  senderId: string | User;
   content: string;
-  isDeleted: boolean;
+  imgUrl?: string;
+  isDeleted?: boolean;
   createdAt: string;
   updatedAt: string;
-  __v: number;
-  replyTo?: MessageReplyTo;
-  status?: MessageStatus;
-  seenBy?: User[];
+  __v?: number;
 }
 
 export interface SendMessage {
-  conversationId: string;
-  type: "text" | "image" | "file";
+  recipientId?: string;
+  conversationId?: string;
   content: string;
-  replyTo?: string;
+  imgUrl?: string;
 }
 
-export type MessageResponse = CursorPaginatedResponse<Message>;
+export type MessageResponse = CursorPaginatedResponse<Message> & {
+  conversation: Conversation;
+};

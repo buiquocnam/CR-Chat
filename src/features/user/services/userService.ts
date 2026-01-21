@@ -21,8 +21,10 @@ export const userService = {
   },
 
   updateProfile: async (data: {
-    username?: string;
-    avatar?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    bio?: string;
+    phone?: string;
   }): Promise<User> => {
     const response = await apiClient.put<User>(`/users/profile`, data);
     return response.data;

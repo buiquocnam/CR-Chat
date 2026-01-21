@@ -11,18 +11,21 @@ export const useUpdateProfile = () => {
     const { user, setUser } = useAuthStore();
 
     return useMutation({
-        mutationFn: async ({ username, avatar }: { username?: string; avatar?: File }) => {
-            let avatarUrl = user?.avatar;
+        mutationFn: async ({ displayName, avatar, bio, phone }: { displayName?: string; avatar?: File; bio?: string; phone?: string }) => {
+            let avatarUrl = user?.avatarUrl;
 
             if (avatar) {
                 const res = await uploadService.uploadUserAvatar(avatar);
-                avatarUrl = res.avatar;
+                avatarUrl = res.avatarUrl; // Assuming uploadService returns avatarUrl or we map it
             }
 
-            if (username || avatarUrl) {
+            if (displayName || avatarUrl || bio || phone) {
+                // Check if userService.updateProfile supports these fields
                const updatedUser = await userService.updateProfile({ 
-                   username, 
-                   avatar: avatarUrl 
+                   displayName,
+                   avatarUrl: avatarUrl,
+                   bio,
+                   phone
                });
                return updatedUser;
             }

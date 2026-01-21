@@ -13,11 +13,18 @@ export const useSendFriendRequest = () => {
 
   return useMutation({
     mutationFn: (userId: string) => emitAsync("send_friend_request", { receiverId: userId }),
-    onSuccess: () => {
+    onSuccess: (data: any, variables: string) => {
+      // data is the response from sendRequest. variables is userId (receiverId)
       toast.success("Đã gửi lời mời kết bạn!");
+      
+      // Manually update the search result to show "Cancel" button immediatey
+      friendCacheService.updateSearchUserRelationship(variables, 'request_sent', data.request._id);
+      
+      // Still invalidate requests list to keep it fresh in background
       friendCacheService.handleRequestResponse();
     },
     onError: (error: any) => {
+      // Socket error response might be structured differently, adapting commonly
       toast.error(error.message || "Không thể gửi lời mời");
     },
   });

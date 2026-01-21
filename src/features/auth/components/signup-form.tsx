@@ -13,6 +13,7 @@ import Image from "next/image"
 import { useSignUp } from "@/features/auth/hooks/useSignUp"
 import { useState } from "react"
 import Link from "next/link"
+import { Eye, EyeOff } from "lucide-react"
 
 export function SignupForm({
   className,
@@ -26,6 +27,8 @@ export function SignupForm({
     confirmPassword: "",
   });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -84,27 +87,65 @@ export function SignupForm({
               <Field>
                 <Field>
                   <FieldLabel htmlFor="password" className="text-sm font-medium ml-1">Password</FieldLabel>
-                  <Input
-                    className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-11 px-4 transition-all"
-                    id="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
+                  <div className="relative">
+                    <Input
+                      className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-11 px-4 pr-10 transition-all"
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">
+                        {showPassword ? "Hide password" : "Show password"}
+                      </span>
+                    </Button>
+                  </div>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="confirmPassword" className="text-sm font-medium ml-1">
                     Confirm Password
                   </FieldLabel>
-                  <Input
-                    className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-11 px-4 transition-all"
-                    id="confirmPassword"
-                    type="password"
-                    required
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                  />
+                  <div className="relative">
+                    <Input
+                      className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-11 px-4 pr-10 transition-all"
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span className="sr-only">
+                        {showConfirmPassword ? "Hide password" : "Show password"}
+                      </span>
+                    </Button>
+                  </div>
                 </Field>
                 {error && <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg border border-red-100 text-center">{error}</p>}
 
@@ -114,13 +155,6 @@ export function SignupForm({
                   {isPending ? "Creating account..." : "Sign Up"}
                 </Button>
               </Field>
-
-              <div className="relative flex items-center py-2">
-                <span className="w-full border-t border-muted" />
-                <span className="bg-background px-2 text-xs text-muted-foreground uppercase absolute left-1/2 -translate-x-1/2 bg-white/0">
-                  Or continue with
-                </span>
-              </div>
 
               <Field>
                 <Button variant="outline" type="button" className="w-full h-11 rounded-xl border-border hover:bg-muted/50 hover:text-foreground transition-colors">

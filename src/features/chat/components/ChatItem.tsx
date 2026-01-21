@@ -16,18 +16,19 @@ interface ChatItemProps {
 }
 
 const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) => {
-  const displayName =
-    conversation.type === "group"
-      ? conversation.name || "Group Chat"
-      : conversation.otherMember?.username || "Unknown";
+  // Helper logic to find the other participant in direct chats
+  const otherParticipant = conversation.participants.find(p => p._id !== currentUser?._id) || conversation.participants[0];
 
-  const displayAvatar =
-    conversation.type === "group"
-      ? conversation.avatar
-      : conversation.otherMember?.avatar;
+  const displayName = conversation.type === "group"
+    ? conversation.group?.name || "Group Chat"
+    : otherParticipant?.displayName || "Unknown";
+
+  const displayAvatar = conversation.type === "group"
+    ? undefined // Group avatar logic if needed
+    : otherParticipant?.avatarUrl;
 
   const lastMessage = conversation.lastMessage;
-  const unreadCount = conversation.unreadCount || 0;
+  const unreadCount = (currentUser && conversation.unreadCounts?.[currentUser._id]) || 0;
   const senderName =
     lastMessage?.senderId?._id === currentUser?._id
       ? "Me"
@@ -36,8 +37,8 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
   let lastMessageContent = "No messages yet";
 
   if (lastMessage) {
-    if (lastMessage.type === 'image') lastMessageContent = 'Sent an image';
-    else if (lastMessage.type === 'file') lastMessageContent = 'Sent a file';
+    if (lastMessage.imgUrl) lastMessageContent = 'Sent an image';
+    // else if (lastMessage.type === 'file') lastMessageContent = 'Sent a file'; // Type removed
     else lastMessageContent = lastMessage.content;
   }
 

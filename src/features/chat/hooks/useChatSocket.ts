@@ -15,7 +15,7 @@ export const useChatSocket = () => {
   const queryClient = useQueryClient();
   const currentUserId = useAuthStore((state) => state.user?._id);
   const params = useParams();
-  const activeConversationId = params?.conversationId as string | undefined;
+  const activeConversationId = params?.id as string | undefined;
 
   // Initialize the Domain Layer service
   const chatCacheService = useMemo(
@@ -26,8 +26,21 @@ export const useChatSocket = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleNewMessage = (newMessage: Message) => {
-      chatCacheService.handleNewMessage(newMessage, activeConversationId);
+    const handleNewMessage = (data: any) => {
+      const newMessage = data.message;
+      if (!newMessage) {
+          console.error("Invalid new_message payload:", data);
+          return;
+      }
+    
+      const senderId = typeof newMessage.senderId === 'string' 
+          ? newMessage.senderId 
+          : newMessage.senderId?._id;
+          
+      if (senderId === currentUserId) return;
+      
+      // Pass the full data object which includes message and unreadCounts
+      chatCacheService.handleNewMessage(data, activeConversationId);
     };
 
     const handleNewConversation = (conversation: Conversation) => {
@@ -42,16 +55,30 @@ export const useChatSocket = () => {
       chatCacheService.handleMessageDeleted(data);
     };
 
+    // Event Listeners
     socket.on(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
     socket.on(SOCKET_EVENTS.NEW_CONVERSATION, handleNewConversation);
     socket.on(SOCKET_EVENTS.MESSAGE_SEEN, handleMessageSeen);
     socket.on(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
 
+    // Join Conversation Room
+    if (activeConversationId) {
+      socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION, activeConversationId, (res: any) => {
+        if (res?.status !== "ok") console.error("Failed to join conversation", res);
+      });
+    }
+
     return () => {
+      // Event Cleanup
       socket.off(SOCKET_EVENTS.NEW_MESSAGE, handleNewMessage);
       socket.off(SOCKET_EVENTS.NEW_CONVERSATION, handleNewConversation);
       socket.off(SOCKET_EVENTS.MESSAGE_SEEN, handleMessageSeen);
       socket.off(SOCKET_EVENTS.MESSAGE_DELETED, handleMessageDeleted);
+
+      // Leave Conversation Room
+      if (activeConversationId) {
+        socket.emit(SOCKET_EVENTS.LEAVE_CONVERSATION, activeConversationId);
+      }
     };
   }, [socket, chatCacheService, activeConversationId]);
 };

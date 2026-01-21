@@ -13,12 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { useSignIn } from "@/features/auth/hooks/useSignIn";
 import Image from "next/image";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const { mutate: signIn, isPending } = useSignIn();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,13 +62,32 @@ export function LoginForm({
 
               <Field>
                 <FieldLabel htmlFor="password" className="text-sm font-medium ml-1">Password</FieldLabel>
-                <Input
-                  className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-12 px-4 transition-all"
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-12 px-4 pr-10 transition-all"
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="sr-only">
+                      {showPassword ? "Hide password" : "Show password"}
+                    </span>
+                  </Button>
+                </div>
               </Field>
 
               <Field>
@@ -73,18 +96,11 @@ export function LoginForm({
                 </Button>
               </Field>
 
-              <div className="relative flex items-center py-2">
-                <span className="w-full border-t border-muted" />
-                <span className="bg-background px-2 text-xs text-muted-foreground uppercase absolute left-1/2 -translate-x-1/2 bg-white/0">
-                  Or continue with
-                </span>
-              </div>
-
               <div className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{" "}
-                <a href="#" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">
+                <Link href="/signup" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">
                   Sign up
-                </a>
+                </Link>
               </div>
             </FieldGroup>
           </form>
@@ -103,6 +119,6 @@ export function LoginForm({
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 }

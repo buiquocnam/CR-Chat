@@ -38,7 +38,7 @@ export function ChatSidebar() {
     // Client-side filtering for tabs (since backend might not support distinct tabs endpoint yet)
     if (!isSearching) {
         if (tab === "friend") {
-            filteredData = filteredData.filter((c) => c.type === "private");
+            filteredData = filteredData.filter((c) => c.type === "direct");
         } else if (tab === "group") {
             filteredData = filteredData.filter((c) => c.type === "group");
         }

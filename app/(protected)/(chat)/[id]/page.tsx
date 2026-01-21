@@ -7,11 +7,13 @@ import ChatWindowHeader from "@/features/chat/components/ChatWindowHeader";
 import ChatWindowBody from "@/features/message/components/ChatWindowBody";
 import ChatWindowInput from "@/features/message/components/ChatWindowInput";
 import { Loader2 } from "lucide-react";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export default function ChatPage() {
   const params = useParams();
-  const conversationId = params.id as string;
-  const { data: conversation, isLoading } = useConversationById(conversationId);
+  const id = params.id as string;
+  const { data: conversation, isLoading } = useConversationById(id);
+  const user = useAuthStore((state) => state.user);
 
   if (isLoading) {
     return (
@@ -23,22 +25,30 @@ export default function ChatPage() {
     );
   }
 
-  if (!conversation) {
+  if (conversation) {
+    let receiverId = undefined;
+    if (conversation.type === 'direct') {
+      const otherMember = conversation.participants.find((p) => p._id !== user?._id);
+      receiverId = otherMember?._id;
+    }
+
     return (
       <ChatWindowLayout>
-        <div className="flex-1 flex items-center justify-center h-full">
-          <p className="text-muted-foreground">Conversation not found</p>
-        </div>
+        <ChatWindowHeader conversation={conversation} />
+        <ChatWindowBody conversationId={conversation._id} />
+        <ChatWindowInput
+          conversationId={conversation._id}
+          receiverId={receiverId}
+        />
       </ChatWindowLayout>
     );
   }
 
   return (
     <ChatWindowLayout>
-      <ChatWindowHeader conversation={conversation} />
-      <ChatWindowBody conversationId={conversationId} />
-      <ChatWindowInput conversationId={conversationId} />
+      <div className="flex-1 flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Conversation not found</p>
+      </div>
     </ChatWindowLayout>
   );
 }
-

@@ -9,7 +9,15 @@ export default function ReactQueryProvider({
   children: ReactNode;
 }) {
   // ❗ đảm bảo chỉ tạo 1 QueryClient duy nhất
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Prevent aggressive refetching on window focus or component mount
+        staleTime: 60 * 1000,
+        refetchOnWindowFocus: false,
+      }
+    }
+  }));
 
   return (
     <QueryClientProvider client={queryClient}>

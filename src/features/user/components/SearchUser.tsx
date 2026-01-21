@@ -40,7 +40,7 @@ export default function SearchUser() {
 
     const handleCancelRequest = (requestId: string, userId: string) => {
         setPendingUserId(userId);
-        cancelRequestMutation.mutate(requestId, {
+        cancelRequestMutation.mutate({ requestId, userId }, {
             onSettled: () => {
                 setPendingUserId(null);
             }

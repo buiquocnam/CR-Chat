@@ -1,9 +1,44 @@
 "use client";
 
 import { ChatSidebar } from "@/features/chat/components/ChatSidebar";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useUserById } from "@/features/user/hooks/useUserById";
+import ChatWindowLayout from "@/features/chat/components/ChatWindowLayout";
+import ChatWindowHeader from "@/features/chat/components/ChatWindowHeader";
+import ChatWindowInput from "@/features/message/components/ChatWindowInput";
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+
+  const { data: user, isLoading } = useUserById(userId || "");
+
+  if (userId) {
+    if (isLoading) {
+      return (
+        <div className="h-full w-full flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    if (user) {
+      return (
+        <ChatWindowLayout>
+          <ChatWindowHeader otherUser={user} />
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-center text-muted-foreground">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <MessageCircle className="h-8 w-8 text-primary" />
+            </div>
+            <p>Start a conversation with {user.displayName || user.username}</p>
+          </div>
+          <ChatWindowInput receiverId={user._id} />
+        </ChatWindowLayout>
+      );
+    }
+  }
+
   return (
     <div className="h-full w-full">
       {/* Mobile: Show Chat Sidebar */}

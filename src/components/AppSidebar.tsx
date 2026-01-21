@@ -8,10 +8,11 @@ import { MessageCircle, Users, UserPlus, Compass, Settings } from "lucide-react"
 import { LogoutButton } from "@/features/auth/components/LogoutButton";
 import { ModeToggle } from "@/components/shared/ModeToggle";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { ProfileDialog } from "@/features/user/components/ProfileDialog";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-
+import { SettingsDialog } from "@/features/user/components/SettingsDialog";
 
 const items = [
   {
@@ -38,36 +39,36 @@ const items = [
     icon: Compass,
     isActive: (pathname: string) => pathname === "/friends/search",
   },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-    isActive: (pathname: string) => pathname === "/settings",
-  },
 ]
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useAuthStore(); // Needed for user info
 
   return (
     <Sidebar
-      collapsible="none"
+      collapsible="icon"
       className={cn(
-        "w-[72px] lg:w-[80px] hidden md:flex",
+        "w-[260px] hidden md:flex",
         "border-r border-border bg-sidebar/80 backdrop-blur-xl",
         "flex flex-col h-screen transition-colors duration-300"
       )}
     >
       <SidebarContent>
-        <nav className="flex flex-col h-full items-center py-6 gap-6 w-full">
-          {/* Brand Icon */}
-          {/* Brand Icon */}
-          <div className="w-10 h-10 bg-sidebar-primary text-sidebar-primary-foreground rounded-[14px] flex items-center justify-center font-bold text-xl shadow-sm ring-1 ring-border mb-2 hover:scale-105 transition-transform cursor-pointer">
-            M
+        <nav className="flex flex-col h-full py-4 gap-2 w-full px-2">
+          {/* Brand & User Info Header (Optional, or keep clean) */}
+          <div className="flex items-center gap-3 px-2 py-2 mb-4">
+            <div className="w-10 h-10 bg-sidebar-primary text-sidebar-primary-foreground rounded-xl flex items-center justify-center font-bold text-xl shadow-sm ring-1 ring-border">
+              M
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="font-semibold truncate text-sm">{user?.displayName || "User"}</span>
+              <span className="text-xs text-muted-foreground truncate">{user?.username || user?.email}</span>
+            </div>
           </div>
 
           {/* Navigation Items */}
-          <div className="flex-1 flex flex-col gap-3 w-full px-3">
+          <div className="flex-1 flex flex-col gap-1 w-full">
             {items.map((item) => {
               const active = item.isActive(pathname);
               return (
@@ -75,16 +76,17 @@ export function AppSidebar() {
                   key={item.title}
                   href={item.url}
                   className={cn(
-                    "w-full aspect-square flex items-center justify-center rounded-[18px] transition-all duration-300 group relative",
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group relative",
                     active
-                      ? "bg-primary text-primary-foreground shadow-md ring-1 ring-border scale-105"
-                      : "text-muted-foreground/60 hover:bg-muted/50 hover:text-foreground"
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   )}
                   title={item.title}
                 >
-                  <item.icon className="w-6 h-6" strokeWidth={active ? 2.5 : 2} />
+                  <item.icon className={cn("w-5 h-5", active && "text-primary")} strokeWidth={active ? 2.5 : 2} />
+                  <span className="text-sm">{item.title}</span>
                   {active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 h-3 w-1 bg-primary rounded-r-full shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-1 bg-primary rounded-r-full" />
                   )}
                 </Link>
               );
@@ -92,13 +94,26 @@ export function AppSidebar() {
           </div>
 
           {/* Footer Items */}
-          <div className="flex flex-col gap-4 items-center px-3 w-full pb-2">
-            <ModeToggle />
-            <ProfileDialog />
-            <LogoutButton showLabel={false} className="w-full aspect-square p-0 rounded-[18px] flex items-center justify-center text-muted-foreground/60 hover:bg-black/5 hover:text-destructive transition-colors" />
+          <div className="mt-auto flex flex-col gap-2 px-2 pb-2">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/50">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <ProfileDialog /> {/* Use ProfileDialog trigger which is the Avatar */}
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-xs font-medium truncate">{user?.displayName}</span>
+                  <span className="text-[10px] text-muted-foreground truncate opacity-70">Online</span>
+                </div>
+              </div>
+              <SettingsDialog
+                trigger={<Settings className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-pointer" />}
+              />
+            </div>
+
+            <div className="w-full">
+              <LogoutButton showLabel={true} className="w-full justify-start px-3 text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10" />
+            </div>
           </div>
         </nav>
       </SidebarContent>
-    </Sidebar>
+    </Sidebar >
   );
 }

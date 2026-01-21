@@ -7,4 +7,5 @@ export const QUERY_KEYS = {
   SEARCH_USERS: "search-users",
   FRIEND_REQUESTS: "friend-requests",
   ONLINE_FRIENDS: "online-friends",
+  USERS: "users",
 } as const;

@@ -5,7 +5,7 @@ export const uploadService = {
     const formData = new FormData();
     formData.append("avatar", file);
 
-    const res = await api.post<{ avatar: string }>(
+    const res = await api.post<{ avatarUrl: string }>(
       "/upload/user/avatar",
       formData,
       {

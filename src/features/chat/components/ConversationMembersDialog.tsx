@@ -11,6 +11,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { User } from "@/types/user";
 
+import { Input } from "@/components/ui/input";
+import { useAddMembers } from "@/features/chat/hooks/useAddMembers";
+import { useSearchUsers } from "@/features/user/hooks/useSearchUsers";
+import { useDebounce } from "@/hooks/useDebounce";
+
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -42,23 +47,34 @@ interface ConversationMembersDialogProps {
 }
 
 export function ConversationMembersDialog({ conversationId }: ConversationMembersDialogProps) {
+    const [view, setView] = useState<'list' | 'add'>('list');
     const [open, setOpen] = useState(false);
     const { user: currentUser } = useAuthStore();
     const router = useRouter();
 
-    // Hooks
+    // Hooks for members list
     const { data: members, isLoading } = useConversationMembers(conversationId, open);
-    const { mutate: sendRequest, isPending: isSending } = useSendFriendRequest();
-    const { mutate: acceptRequest, isPending: isAccepting } = useAcceptFriendRequest();
-    const { mutate: unfriend, isPending: isUnfriending } = useUnfriend();
-
+    const { mutateAsync: sendRequest, isPending: isSending } = useSendFriendRequest();
+    const { mutateAsync: acceptRequest, isPending: isAccepting } = useAcceptFriendRequest();
+    const { mutateAsync: unfriend, isPending: isUnfriending } = useUnfriend();
     const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
+
+    // Hooks for add members
+    const [query, setQuery] = useState("");
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const debouncedQuery = useDebounce(query, 300);
+    const { data: searchResults } = useSearchUsers(debouncedQuery);
+    const { mutate: addMembers, isPending: isAdding } = useAddMembers();
 
     const handleChat = async (userId: string) => {
         setLoadingActionId(userId);
         try {
-            const conv = await conversationService.createPrivateConversation(userId);
-            router.push(`/${conv._id}`);
+            const { conversation } = await conversationService.getDirectConversation(userId);
+            if (conversation) {
+                router.push(`/${conversation._id}`);
+            } else {
+                router.push(`/?userId=${userId}`);
+            }
             setOpen(false);
         } catch (error) {
             toast.error("Không thể mở cuộc trò chuyện");
@@ -78,8 +94,40 @@ export function ConversationMembersDialog({ conversationId }: ConversationMember
         }
     };
 
+    const handleSelectUser = (userId: string) => {
+        if (selectedUsers.includes(userId)) {
+            setSelectedUsers(selectedUsers.filter((id) => id !== userId));
+        } else {
+            setSelectedUsers([...selectedUsers, userId]);
+        }
+    };
+
+    const handleAddMembers = () => {
+        if (selectedUsers.length === 0) return;
+
+        addMembers(
+            {
+                conversationId,
+                memberIds: selectedUsers,
+            },
+            {
+                onSuccess: () => {
+                    setView('list');
+                    setSelectedUsers([]);
+                    setQuery("");
+                    toast.success("Đã thêm thành viên");
+                },
+            }
+        );
+    };
+
+    const users = searchResults?.pages.flatMap((page) => page.data) || [];
+
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(val) => {
+            setOpen(val);
+            if (!val) setTimeout(() => setView('list'), 300); // Reset view on close
+        }}>
             <DialogTrigger asChild>
                 <Button variant="ghost" size="icon" title="Thành viên nhóm">
                     <Users className="h-5 w-5" />
@@ -87,109 +135,171 @@ export function ConversationMembersDialog({ conversationId }: ConversationMember
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Thành viên nhóm ({members?.length || 0})</DialogTitle>
+                    <div className="flex items-center justify-between">
+                        <DialogTitle>
+                            {view === 'list' ? `Thành viên nhóm (${members?.length || 0})` : 'Thêm thành viên'}
+                        </DialogTitle>
+                        {view === 'list' ? (
+                            <Button variant="ghost" size="sm" onClick={() => setView('add')}>
+                                <UserPlus className="h-4 w-4 mr-2" /> Thêm
+                            </Button>
+                        ) : (
+                            <Button variant="ghost" size="sm" onClick={() => setView('list')}>
+                                Quay lại
+                            </Button>
+                        )}
+                    </div>
                 </DialogHeader>
 
-                <ScrollArea className="h-[400px] pr-4">
-                    {isLoading ? (
-                        <div className="flex items-center justify-center h-20">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {members?.map((member: any) => {
-                                const user: User = member.user || member.userId;
-                                const isMe = user._id === currentUser?._id;
-                                const isActionLoading = loadingActionId === user._id;
+                {view === 'list' ? (
+                    <ScrollArea className="h-[400px] pr-4">
+                        {isLoading ? (
+                            <div className="flex items-center justify-center h-20">
+                                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {/* Current Members List - Logic Unchanged */}
+                                {members?.map((member: any) => {
+                                    const user: User = {
+                                        ...member,
+                                        username: member.displayName || "Unknown"
+                                    };
+                                    const isMe = user._id === currentUser?._id;
+                                    const isActionLoading = loadingActionId === user._id;
 
-                                const renderActions = () => {
-                                    if (isMe) return <span className="text-xs text-muted-foreground px-2">Bạn</span>;
+                                    const renderActions = () => {
+                                        if (isMe) return <span className="text-xs text-muted-foreground px-2">Bạn</span>;
 
-                                    return (
-                                        <>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                onClick={() => handleChat(user._id)}
-                                                disabled={isActionLoading}
-                                                title="Nhắn tin"
-                                            >
-                                                {isActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
-                                            </Button>
-
-                                            {user.relationship === 'friend' && (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100">
-                                                            <UserCheck className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem
-                                                            className="text-destructive focus:text-destructive cursor-pointer"
-                                                            onClick={() => handleAction(() => unfriend(user._id), user._id)}
-                                                        >
-                                                            <UserMinus className="h-4 w-4 mr-2" />
-                                                            Huỷ kết bạn
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            )}
-
-                                            {user.relationship === 'none' && (
+                                        return (
+                                            <>
                                                 <Button
                                                     size="icon"
                                                     variant="ghost"
                                                     className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                    onClick={() => handleAction(() => sendRequest(user._id), user._id)}
+                                                    onClick={() => handleChat(user._id)}
                                                     disabled={isActionLoading}
-                                                    title="Kết bạn"
+                                                    title="Nhắn tin"
                                                 >
-                                                    <UserPlus className="h-4 w-4" />
+                                                    {isActionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
                                                 </Button>
-                                            )}
 
-                                            {user.relationship === 'request_sent' && (
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 text-muted-foreground cursor-default"
-                                                    disabled
-                                                    title="Đã gửi lời mời"
-                                                >
-                                                    <Clock className="h-4 w-4" />
-                                                </Button>
-                                            )}
+                                                {user.relationship === 'friend' && (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100">
+                                                                <UserCheck className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem
+                                                                className="text-destructive focus:text-destructive cursor-pointer"
+                                                                onClick={() => handleAction(() => unfriend(user._id), user._id)}
+                                                            >
+                                                                <UserMinus className="h-4 w-4 mr-2" />
+                                                                Huỷ kết bạn
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                )}
 
-                                            {user.relationship === 'request_received' && user.friendRequestId && (
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
-                                                    onClick={() => handleAction(() => acceptRequest(user.friendRequestId!), user._id)}
-                                                    disabled={isActionLoading}
-                                                    title="Chấp nhận kết bạn"
-                                                >
-                                                    <UserCheck className="h-4 w-4" />
-                                                </Button>
-                                            )}
-                                        </>
+                                                {user.relationship === 'none' && (
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                        onClick={() => handleAction(() => sendRequest(user._id), user._id)}
+                                                        disabled={isActionLoading}
+                                                        title="Kết bạn"
+                                                    >
+                                                        <UserPlus className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+
+                                                {user.relationship === 'request_sent' && (
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8 text-muted-foreground cursor-default"
+                                                        disabled
+                                                        title="Đã gửi lời mời"
+                                                    >
+                                                        <Clock className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+
+                                                {user.relationship === 'request_received' && user.friendRequestId && (
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+                                                        onClick={() => handleAction(() => acceptRequest({ requestId: user.friendRequestId!, userId: user._id }), user._id)}
+                                                        disabled={isActionLoading}
+                                                        title="Chấp nhận kết bạn"
+                                                    >
+                                                        <UserCheck className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </>
+                                        );
+                                    };
+
+                                    return (
+                                        <UserItem
+                                            key={user._id}
+                                            user={user}
+                                            subText={undefined}
+                                            actions={renderActions()}
+                                        />
                                     );
-                                };
+                                })}
+                            </div>
+                        )}
+                    </ScrollArea>
+                ) : (
+                    <div className="flex flex-col h-[400px]">
+                        <div className="pb-4 space-y-4">
+                            <Input
+                                placeholder="Tìm kiếm người dùng..."
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                autoFocus
+                            />
 
-                                return (
-                                    <UserItem
-                                        key={user._id}
-                                        user={user}
-                                        subText={member.role === 'admin' ? 'Quản trị viên' : undefined}
-                                        actions={renderActions()}
-                                    />
-                                );
-                            })}
+                            <ScrollArea className="h-[300px] border rounded-md p-2">
+                                {users.length === 0 ? (
+                                    <p className="text-center text-sm text-muted-foreground py-4">Không tìm thấy người dùng</p>
+                                ) : (
+                                    users.map((user) => (
+                                        <div
+                                            key={user._id}
+                                            className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted ${selectedUsers.includes(user._id) ? "bg-muted" : ""
+                                                }`}
+                                            onClick={() => handleSelectUser(user._id)}
+                                        >
+                                            {/* Minimal User Item for Selection */}
+                                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold">
+                                                {user.avatarUrl ? <img src={user.avatarUrl} className="w-full h-full rounded-full object-cover" /> : (user.displayName || user.username)[0].toUpperCase()}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium truncate">{user.displayName || user.username}</p>
+                                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                            </div>
+                                            {selectedUsers.includes(user._id) && (
+                                                <UserCheck className="h-4 w-4 text-primary" />
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </ScrollArea>
                         </div>
-                    )}
-                </ScrollArea>
+                        <div className="mt-auto pt-2 flex justify-end">
+                            <Button onClick={handleAddMembers} disabled={isAdding || selectedUsers.length === 0}>
+                                {isAdding ? "Đang thêm..." : "Thêm thành viên"}
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </DialogContent>
         </Dialog>
     );
