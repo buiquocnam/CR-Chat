@@ -130,15 +130,12 @@ export class ChatCacheService {
       (oldData) => updateInfiniteCacheItem<Conversation, ConversationResponse>(oldData, data.conversationId, (c) => {
          const newConversation = { ...c };
          
-         // Update unread count if it's me
          if (data.userId === this.currentUserId) {
             const newUnreadCounts = { ...c.unreadCounts };
             newUnreadCounts[this.currentUserId] = 0;
             newConversation.unreadCounts = newUnreadCounts;
          }
 
-         // 1. Update Conversation List
-         // Add user to seenBy list using robust ID check
          const currentSeenBy = c.seenBy || [];
          const alreadySeen = currentSeenBy.some(u => {
              const id = typeof u === 'string' ? u : u._id;
@@ -179,15 +176,12 @@ export class ChatCacheService {
              
              const newConv = { ...oldConv };
 
-             // Update unread count if it's me
              if (data.userId === this.currentUserId) {
                  const newUnreadCounts = { ...newConv.unreadCounts };
                  newUnreadCounts[this.currentUserId] = 0;
-                 // force reactiveness
                  newConv.unreadCounts = newUnreadCounts; 
              }
 
-             // Add user to seenBy list
              const currentSeenBy = newConv.seenBy || [];
              const alreadySeen = currentSeenBy.some(u => {
                  const id = typeof u === 'string' ? u : u._id;
@@ -220,11 +214,8 @@ export class ChatCacheService {
      );
   }
 
-  /**
-   * Updates cache when a message is deleted.
-   */
+
   handleMessageDeleted(data: { conversationId: string; messageId: string }) {
-    // Update conversation list last message
     this.queryClient.setQueryData<InfiniteData<ConversationResponse>>(
       [QUERY_KEYS.CONVERSATIONS],
       (oldData) => updateInfiniteCacheItem<Conversation, ConversationResponse>(oldData, data.conversationId, (c) => {

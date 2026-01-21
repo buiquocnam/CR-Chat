@@ -13,7 +13,6 @@ export const conversationService = {
   },
 
   getConversationById: async (conversationId: string): Promise<Conversation> => {
-    // Replaced specific getConversationById call with getMessages call (limit=0 to just get metadata)
     const response = await apiClient.get<any>(
       `/conversations/${conversationId}/messages?limit=0`
     );
@@ -28,22 +27,9 @@ export const conversationService = {
   },
 
   createDirectConversation: async (recipientId: string): Promise<Conversation> => {
-     // Currently we want to revert to "create immediately".
-     // We can use the generic create endpoint with type direct.
      const response = await apiClient.post<Conversation>('/conversations', {
          type: 'direct',
-         memberIds: [recipientId] // Wait, usually direct creation takes memberIds or recipientId. 
-         // Backend createConversation uses memberIds for group, but for direct?
-         // Let's check backend createConversation.
-         // If I look at Controller (Step 370), it handles type='direct' and uses `memberIds` or `participants`.
-         // Let's guess/standardize on sending memberIds. 
-         // Actually Step 370:
-         // if (type === "direct") {
-         //   const result = await chatService.getOrCreateConversation(senderId, memberIds[0]);
-         // }
-         // Wait, step 370 was "refactored to use chatService". Then 379 "Restored original logic".
-         // Let's use generic POST /conversations with { type: 'direct', memberIds: [recipientId] }
-         // Need to verify backend supports this payload.
+         memberIds: [recipientId] 
      });
      return response.data;
   },
