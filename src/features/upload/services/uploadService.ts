@@ -3,10 +3,10 @@ import api from "@/lib/axios";
 export const uploadService = {
   uploadUserAvatar: async (file: File) => {
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("file", file);
 
     const res = await api.post<{ avatarUrl: string }>(
-      "/upload/user/avatar",
+      "/users/uploadAvatar",
       formData,
       {
         headers: {
