@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useSearchUsers } from "@/features/user/hooks/useSearchUsers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Loader2, UserPlus, Search, Check, Clock, X, UserMinus } from "lucide-react";
-import Image from "next/image";
 import { UserProfileDialog } from "@/features/user/components";
+import { UserItem } from "@/components/shared/UserItem";
 import { useSendFriendRequest, useCancelFriendRequest, useUnfriend } from "@/features/friend/hooks";
 
 interface SearchUserDialogProps {
@@ -87,71 +87,59 @@ export default function SearchUserDialog({ open, onOpenChange }: SearchUserDialo
               </div>
             ) : users.length > 0 ? (
               users.map(user => (
-                <div key={user._id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors"
+                <UserItem
+                  key={user._id}
+                  user={user}
                   onClick={() => handleOpenUserProfileDialog(user)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-muted cursor-pointer" >
-                      {user.avatarUrl ? (
-                        <Image src={user.avatarUrl} alt={user.displayName} fill className="object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-primary text-primary-foreground text-sm font-bold">
-                          {(user.displayName || user.username)?.[0]?.toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium">{user.displayName || user.username}</p>
-                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                    </div>
-                  </div>
-
-                  {user.relationship === 'friend' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUnfriend(user._id);
-                      }}
-                      disabled={pendingUserId === user._id}
-                      className="min-w-[100px]"
-                    >
-                      {pendingUserId === user._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UserMinus className="h-4 w-4 mr-2" /> Hủy kết bạn</>}
-                    </Button>
-                  ) : user.relationship === 'request_sent' ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        user.friendRequestId && handleCancelRequest(user.friendRequestId, user._id);
-                      }}
-                      disabled={pendingUserId === user._id}
-                      className="min-w-[100px]"
-                    >
-                      {pendingUserId === user._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><X className="h-4 w-4 mr-2" /> Hủy</>}
-                    </Button>
-                  ) : user.relationship === 'request_received' ? (
-                    <Button size="sm" variant="secondary" disabled className="min-w-[100px]">
-                      <Clock className="h-4 w-4 mr-2" />
-                      Chờ duyệt
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSendRequest(user._id);
-                      }}
-                      disabled={pendingUserId === user._id}
-                      className="min-w-[100px]"
-                    >
-                      {pendingUserId === user._id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UserPlus className="h-4 w-4 mr-2" /> Kết bạn</>}
-                    </Button>
-                  )}
-                </div>
+                  className="border"
+                  actions={
+                    user.relationship === 'friend' ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnfriend(user._id);
+                        }}
+                        disabled={pendingUserId === user._id}
+                        className="min-w-[100px] h-8 text-[11px] rounded-full"
+                      >
+                        {pendingUserId === user._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <><UserMinus className="h-3 w-3 mr-1.5" /> Hủy kết bạn</>}
+                      </Button>
+                    ) : user.relationship === 'request_sent' ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          user.friendRequestId && handleCancelRequest(user.friendRequestId, user._id);
+                        }}
+                        disabled={pendingUserId === user._id}
+                        className="min-w-[100px] h-8 text-[11px] rounded-full"
+                      >
+                        {pendingUserId === user._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <><X className="h-3 w-3 mr-1.5" /> Hủy</>}
+                      </Button>
+                    ) : user.relationship === 'request_received' ? (
+                      <Button size="sm" variant="secondary" disabled className="min-w-[100px] h-8 text-[11px] rounded-full opacity-60">
+                        <Clock className="h-3 w-3 mr-1.5" />
+                        Chờ duyệt
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSendRequest(user._id);
+                        }}
+                        disabled={pendingUserId === user._id}
+                        className="min-w-[100px] h-8 text-[11px] rounded-full"
+                      >
+                        {pendingUserId === user._id ? <Loader2 className="h-3 w-3 animate-spin" /> : <><UserPlus className="h-3 w-3 mr-1.5" /> Kết bạn</>}
+                      </Button>
+                    )
+                  }
+                />
               ))
             ) : debouncedSearch ? (
               <p className="text-center text-muted-foreground py-4">Không tìm thấy người dùng nào.</p>

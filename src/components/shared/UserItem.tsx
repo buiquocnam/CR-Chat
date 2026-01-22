@@ -30,8 +30,10 @@ export function UserItem({ user, actions, className, onClick, subText }: UserIte
 
             <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{user.displayName || user.username}</p>
-                <div className="text-sm text-muted-foreground truncate">
-                    {subText || user.email}
+                <div className="text-[11px] text-muted-foreground truncate flex flex-col leading-tight">
+                    {subText && <div className="mb-0.5">{subText}</div>}
+                    <span className="truncate opacity-80">{user.email}</span>
+                    {user.phone && <span className="truncate opacity-60 italic">{user.phone}</span>}
                 </div>
             </div>
 

@@ -15,7 +15,9 @@ export const useMe = () => {
       console.log(res);
       return res;
     },
-    enabled: false,
+    staleTime: 5 * 60 * 1000, // 5 mins
+    retry: false,
+    enabled: true,
   });
 
   useEffect(() => {

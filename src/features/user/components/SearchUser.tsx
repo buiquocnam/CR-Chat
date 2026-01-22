@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearchUsers } from "@/features/user/hooks/useSearchUsers";
 import { useDebounce } from "@/hooks/useDebounce";
-import { Loader2, UserPlus, Search, Check, Clock, X, UserMinus } from "lucide-react";
+import { Search, Loader2, UserPlus, X, UserMinus, Clock } from "lucide-react";
 import UserProfileDialog from "./UserProfileDialog";
-import { useSendFriendRequest, useCancelFriendRequest, useUnfriend } from "@/features/friend/hooks";
 import { UserItem } from "@/components/shared/UserItem";
+import { useSendFriendRequest, useCancelFriendRequest, useUnfriend } from "@/features/friend/hooks";
 
 export default function SearchUser() {
     const [searchTerm, setSearchTerm] = useState("");

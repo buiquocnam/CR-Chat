@@ -2,9 +2,13 @@
 
 import { useFriends } from "@/features/friend/hooks/useFriends";
 import { Loader2, MessageSquare, MoreVertical, UserX } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { User } from "@/types/user";
 import { Button } from "@/components/ui/button";
+import { UserItem } from "@/components/shared/UserItem";
+import { useState } from "react";
+import UserProfileDialog from "@/features/user/components/UserProfileDialog";
+import { useRouter } from "next/navigation";
+import { conversationService } from "@/features/chat/services/conversationService";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,19 +16,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUnfriend } from "@/features/friend/hooks/useUnfriend";
-import { UserItem } from "@/components/shared/UserItem";
-import { conversationService } from "@/features/chat/services/conversationService";
 
 export default function FriendsList({ active }: { active: boolean }) {
   const { data, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useFriends(active);
   const router = useRouter();
   const { mutate: unfriend } = useUnfriend();
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [openUserProfileDialog, setOpenUserProfileDialog] = useState(false);
 
-  if (!active) {
-    return null;
-  }
-
-  const friends: User[] = data?.pages.flatMap((page) => page.data) ?? [];
+  const handleOpenUserProfileDialog = (user: User) => {
+    setSelectedUser(user);
+    setOpenUserProfileDialog(true);
+  };
 
   const handleChat = async (friendId: string) => {
     try {
@@ -35,19 +38,24 @@ export default function FriendsList({ active }: { active: boolean }) {
         router.push(`/?userId=${friendId}`);
       }
     } catch (error) {
-      // Fallback to new chat view if error
       router.push(`/?userId=${friendId}`);
     }
   };
 
   const handleUnfriend = (e: React.MouseEvent, friendId: string) => {
-    e.stopPropagation(); // Prevent navigation
+    e.stopPropagation();
     if (confirm("Are you sure you want to unfriend this user?")) {
       unfriend(friendId);
     }
+  };
+
+  if (!active) {
+    return null;
   }
 
-  if (isLoading && !data) {
+  const friends: User[] = data?.pages.flatMap((page) => page.data) ?? [];
+
+  if (isLoading && friends.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -58,27 +66,30 @@ export default function FriendsList({ active }: { active: boolean }) {
   if (friends.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
-        <p className="text-muted-foreground">No friends yet</p>
+        <p className="text-muted-foreground">Chưa có bạn bè nào</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {friends.map((friend) => {
-        const renderSubText = () => {
-          if (friend.isOnline) return <span className="text-xs text-green-500 font-medium">Online</span>;
-          if (friend.lastSeen) return <span className="text-xs text-muted-foreground">Last seen {new Date(friend.lastSeen).toLocaleDateString()}</span>;
-          return null;
-        }
-
-        const renderActions = () => {
-          return (
-            <>
+      {friends.map((friend) => (
+        <UserItem
+          key={friend._id}
+          user={friend}
+          subText={
+            friend.isOnline ? (
+              <span className="text-xs text-green-500 font-medium">Online</span>
+            ) : friend.lastSeen ? (
+              <span className="text-xs text-muted-foreground">Online {new Date(friend.lastSeen).toLocaleDateString('vi-VN')}</span>
+            ) : null
+          }
+          onClick={() => handleOpenUserProfileDialog(friend)}
+          actions={
+            <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => { e.stopPropagation(); handleChat(friend._id); }}>
                 <MessageSquare className="w-4 h-4" />
               </Button>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={(e) => e.stopPropagation()}>
@@ -88,25 +99,15 @@ export default function FriendsList({ active }: { active: boolean }) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={(e) => handleUnfriend(e, friend._id)}>
                     <UserX className="w-4 h-4 mr-2" />
-                    Unfriend
+                    Hủy kết bạn
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </>
-          )
-        }
-
-        return (
-          <UserItem
-            key={friend._id}
-            user={friend}
-            subText={renderSubText()}
-            actions={renderActions()}
-            onClick={() => handleChat(friend._id)}
-            className="border bg-card shadow-sm"
-          />
-        );
-      })}
+            </div>
+          }
+          className="border bg-card shadow-sm hover:bg-muted/50 transition-colors"
+        />
+      ))}
 
       {hasNextPage && (
         <div className="flex justify-center pt-4">
@@ -119,14 +120,15 @@ export default function FriendsList({ active }: { active: boolean }) {
             {isFetchingNextPage ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Loading...
+                Đang tải...
               </>
             ) : (
-              "Load more"
+              "Xem thêm"
             )}
           </Button>
         </div>
       )}
+      <UserProfileDialog open={openUserProfileDialog} onOpenChange={setOpenUserProfileDialog} user={selectedUser} />
     </div>
   );
 }
