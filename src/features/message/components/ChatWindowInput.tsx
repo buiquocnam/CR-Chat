@@ -65,6 +65,14 @@ export default function ChatWindowInput({ conversationId, receiverId, onMessageS
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Client-side validation: Max 5MB
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_SIZE) {
+      toast.error("File quá lớn. Vui lòng chọn file dưới 5MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     try {
       setIsUploading(true);
       const result = await uploadService.uploadFile(file);

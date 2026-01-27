@@ -38,7 +38,8 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
 
   if (lastMessage) {
     if (lastMessage.imgUrl) lastMessageContent = 'Đã gửi một ảnh';
-    // else if (lastMessage.type === 'file') lastMessageContent = 'Sent a file'; // Type removed
+    else if (/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(lastMessage.content)) lastMessageContent = 'Đã gửi một ảnh';
+    else if (lastMessage.content.startsWith("http")) lastMessageContent = 'Đã gửi một tệp đính kèm';
     else lastMessageContent = lastMessage.content;
   }
 

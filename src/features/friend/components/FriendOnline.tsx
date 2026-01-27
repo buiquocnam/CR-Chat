@@ -57,7 +57,7 @@ export default function FriendOnline() {
     return (
       <div className="flex flex-col gap-2 p-4 border rounded-lg bg-card">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">Friends Online</h2>
+          <h2 className="text-lg font-semibold">Bạn bè trực tuyến</h2>
           <Badge variant="secondary">0 trực tuyến</Badge>
         </div>
         <p className="text-sm text-muted-foreground">Không có bạn bè nào đang trực tuyến</p>
@@ -68,7 +68,7 @@ export default function FriendOnline() {
   return (
     <div className="flex flex-col gap-3 p-4 border rounded-lg bg-card">
       <div className="flex items-center gap-2">
-        <h2 className="text-lg font-semibold">Friends Online</h2>
+        <h2 className="text-lg font-semibold">Bạn bè trực tuyến</h2>
         <Badge variant="default">{onlineCount} trực tuyến</Badge>
       </div>
 
