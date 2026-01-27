@@ -205,7 +205,7 @@ const MessageItem = memo(({ isShowName, message, showAvatar, showTime, isSender,
 
       {/* Image Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-fit h-auto max-h-[95vh] p-0 bg-transparent border-0 shadow-none flex items-center justify-center outline-none" showClose={false}>
+        <DialogContent className="max-w-[95vw] w-fit h-auto max-h-[95vh] p-0 bg-transparent border-0 shadow-none flex items-center justify-center outline-none">
           <DialogTitle className="sr-only">Xem ảnh đầy đủ</DialogTitle>
           <div className="relative flex items-center justify-center">
             <Button
