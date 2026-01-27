@@ -30,7 +30,7 @@ export default function ChatWindowHeader({ conversation, otherUser }: ChatWindow
     if (conversation) {
       if (conversation.type === "group") {
         return {
-          name: conversation.group?.name || "Group Chat",
+          name: conversation.group?.name || "Nhóm chat",
           avatar: undefined,
           isGroup: true,
           membersCount: conversation.participants?.length || 0
@@ -45,12 +45,12 @@ export default function ChatWindowHeader({ conversation, otherUser }: ChatWindow
       }
     } else if (otherUser) {
       return {
-        name: otherUser.displayName || otherUser.username || "Unknown",
+        name: otherUser.displayName || otherUser.username || "Không xác định",
         avatar: otherUser.avatarUrl,
         isGroup: false
       };
     }
-    return { name: "Loading...", isGroup: false };
+    return { name: "Đang tải...", isGroup: false };
   };
 
   const { name, avatar, isGroup, membersCount } = getDisplayInfo();
@@ -87,12 +87,12 @@ export default function ChatWindowHeader({ conversation, otherUser }: ChatWindow
         <div className="flex items-center gap-2 text-xs text-muted-foreground/80 font-medium tracking-wide">
           {isGroup ? (
             <span className="flex items-center gap-2">
-              Group <span className="w-1 h-1 rounded-full bg-current opacity-40" /> {membersCount} members
+              Nhóm <span className="w-1 h-1 rounded-full bg-current opacity-40" /> {membersCount} thành viên
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-emerald-600">
               <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_2px_rgba(16,185,129,0.3)]" />
-              Active Now
+              Đang hoạt động
             </span>
           )}
         </div>

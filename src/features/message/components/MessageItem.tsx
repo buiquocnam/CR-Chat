@@ -2,7 +2,7 @@ import { Message } from "@/types/message";
 import { User } from "@/types/user";
 import Image from "next/image";
 import { smartFormat } from "@/lib";
-import { Loader2, Check, CheckCheck, Trash2 } from "lucide-react";
+import { Loader2, Check, CheckCheck, Trash2, FileText } from "lucide-react";
 import { memo } from "react";
 import { useChatStore } from "@/stores/useChatStore";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,59 @@ const MessageItem = memo(({ isShowName, message, showAvatar, showTime, isSender,
       );
     }
 
+    // Check if content is a raw image URL (basic check)
+    const isImageUrl = (url: string) => {
+      return /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(url) || url.startsWith('https://res.cloudinary.com/') && (url.includes('/image/upload/') || url.match(/\.(jpg|png|webp)$/i));
+    };
+
+    const isUrl = (text: string) => {
+      try {
+        new URL(text);
+        return text.startsWith('http');
+      } catch {
+        return false;
+      }
+    };
+
+    if (isImageUrl(message.content)) {
+      return (
+        <div className="relative aspect-auto max-w-full overflow-hidden rounded-xl border border-white/20 shadow-sm">
+          <Image
+            src={message.content}
+            alt="Sent image"
+            width={400}
+            height={300}
+            className="h-auto w-full object-contain cursor-pointer transition-transform hover:scale-[1.02]"
+            unoptimized
+          />
+        </div>
+      );
+    }
+
+    if (isUrl(message.content)) {
+      const fileName = message.content.split('/').pop() || "Tệp đính kèm";
+      return (
+        <a
+          href={message.content}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group/file text-left min-w-[200px]"
+        >
+          <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
+            <FileText className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col overflow-hidden min-w-0 flex-1">
+            <span className={cn("text-sm font-medium truncate", isSender ? "text-white/90" : "text-foreground")}>
+              {decodeURIComponent(fileName)}
+            </span>
+            <span className={cn("text-[10px] flex items-center gap-1", isSender ? "text-white/60" : "text-muted-foreground")}>
+              Nhấn để mở tệp
+            </span>
+          </div>
+        </a>
+      );
+    }
+
     return (
       <p className={cn(
         "break-all whitespace-pre-wrap text-[15px] leading-relaxed font-normal text-left w-full",
@@ -85,9 +138,9 @@ const MessageItem = memo(({ isShowName, message, showAvatar, showTime, isSender,
   // Helper type guard
   const sender = typeof message.senderId === 'object' ? message.senderId : {
     _id: message.senderId,
-    displayName: 'Unknown',
+    displayName: 'Không xác định',
     avatarUrl: undefined,
-    username: 'Unknown',
+    username: 'Không xác định',
     email: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()

@@ -42,9 +42,9 @@ export function LoginForm({
           <form className="p-6 md:p-10" onSubmit={handleSubmit}>
             <FieldGroup className="gap-6">
               <div className="flex flex-col items-center gap-2 text-center mb-2">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Chào mừng trở lại</h1>
                 <p className="text-muted-foreground text-sm">
-                  Login to your account to continue
+                  Đăng nhập vào tài khoản của bạn để tiếp tục
                 </p>
               </div>
 
@@ -61,7 +61,7 @@ export function LoginForm({
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="password" className="text-sm font-medium ml-1">Password</FieldLabel>
+                <FieldLabel htmlFor="password" className="text-sm font-medium ml-1">Mật khẩu</FieldLabel>
                 <div className="relative">
                   <Input
                     className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-12 px-4 pr-10 transition-all"
@@ -84,7 +84,7 @@ export function LoginForm({
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                     <span className="sr-only">
-                      {showPassword ? "Hide password" : "Show password"}
+                      {showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                     </span>
                   </Button>
                 </div>
@@ -92,14 +92,14 @@ export function LoginForm({
 
               <Field>
                 <Button type="submit" disabled={isPending} className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 text-primary-foreground text-base font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
-                  {isPending ? "Logging in..." : "Login"}
+                  {isPending ? "Đang đăng nhập..." : "Đăng nhập"}
                 </Button>
               </Field>
 
               <div className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                Bạn chưa có tài khoản?{" "}
                 <Link href="/signup" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">
-                  Sign up
+                  Đăng ký
                 </Link>
               </div>
             </FieldGroup>

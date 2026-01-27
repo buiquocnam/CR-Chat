@@ -75,7 +75,7 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
   if (!conversationId) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-muted-foreground">Start a new conversation!</p>
+        <p className="text-muted-foreground">Bắt đầu cuộc trò chuyện mới!</p>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export default function ChatWindowBody({ conversationId }: ChatWindowBodyProps) 
   if (allMessages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
+        <p className="text-muted-foreground">Chưa có tin nhắn. Bắt đầu cuộc trò chuyện!</p>
       </div>
     );
   }

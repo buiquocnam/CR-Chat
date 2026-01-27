@@ -5,8 +5,11 @@ import ReactQueryProvider from "@/providers/ReactQueryProvider"
 import { AuthProvider, ThemeProvider } from "@/providers"
 
 export const metadata: Metadata = {
-  title: "Moji",
-  description: "Moji is a real-time chat application",
+  title: "CRChat",
+  description: "CRChat is a real-time chat application",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default async function RootLayout({

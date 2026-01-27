@@ -55,9 +55,9 @@ export function SignupForm({
           <form className="p-6 md:p-10" onSubmit={handleSubmit}>
             <FieldGroup className="gap-5">
               <div className="flex flex-col items-center gap-2 text-center mb-2">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Create account</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Tạo tài khoản</h1>
                 <p className="text-muted-foreground text-sm">
-                  Enter your details to get started
+                  Nhập thông tin của bạn để bắt đầu
                 </p>
               </div>
               <Field>
@@ -73,7 +73,7 @@ export function SignupForm({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="username" className="text-sm font-medium ml-1">Username</FieldLabel>
+                <FieldLabel htmlFor="username" className="text-sm font-medium ml-1">Tên người dùng</FieldLabel>
                 <Input
                   className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-11 px-4 transition-all"
                   id="username"
@@ -86,7 +86,7 @@ export function SignupForm({
               </Field>
               <Field>
                 <Field>
-                  <FieldLabel htmlFor="password" className="text-sm font-medium ml-1">Password</FieldLabel>
+                  <FieldLabel htmlFor="password" className="text-sm font-medium ml-1">Mật khẩu</FieldLabel>
                   <div className="relative">
                     <Input
                       className="bg-secondary/50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/20 h-11 px-4 pr-10 transition-all"
@@ -110,14 +110,14 @@ export function SignupForm({
                         <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                       <span className="sr-only">
-                        {showPassword ? "Hide password" : "Show password"}
+                        {showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                       </span>
                     </Button>
                   </div>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="confirmPassword" className="text-sm font-medium ml-1">
-                    Confirm Password
+                    Xác nhận mật khẩu
                   </FieldLabel>
                   <div className="relative">
                     <Input
@@ -142,7 +142,7 @@ export function SignupForm({
                         <Eye className="h-4 w-4 text-muted-foreground" />
                       )}
                       <span className="sr-only">
-                        {showConfirmPassword ? "Hide password" : "Show password"}
+                        {showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                       </span>
                     </Button>
                   </div>
@@ -152,7 +152,7 @@ export function SignupForm({
               </Field>
               <Field>
                 <Button type="submit" disabled={isPending} className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25 text-primary-foreground text-base font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
-                  {isPending ? "Creating account..." : "Sign Up"}
+                  {isPending ? "Đang tạo tài khoản..." : "Đăng ký"}
                 </Button>
               </Field>
 
@@ -164,12 +164,12 @@ export function SignupForm({
                       fill="currentColor"
                     />
                   </svg>
-                  Sign up with Google
+                  Đăng ký bằng Google
                 </Button>
               </Field>
               <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link href="/login" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">Login</Link>
+                Đã có tài khoản?{" "}
+                <Link href="/login" className="font-semibold text-primary hover:underline hover:text-primary/80 transition-colors">Đăng nhập</Link>
               </div>
             </FieldGroup>
           </form>
@@ -188,8 +188,8 @@ export function SignupForm({
         </CardContent>
       </Card>
       <div className="px-6 text-center text-xs text-muted-foreground">
-        By continuing, you agree to our <a href="#" className="underline hover:text-primary">Terms of Service</a>{" "}
-        and <a href="#" className="underline hover:text-primary">Privacy Policy</a>.
+        Bằng cách tiếp tục, bạn đồng ý với <a href="#" className="underline hover:text-primary">Điều khoản dịch vụ</a>{" "}
+        và <a href="#" className="underline hover:text-primary">Chính sách bảo mật</a>.
       </div>
     </div>
   )

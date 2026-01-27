@@ -82,7 +82,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
   if (requests.length === 0) {
     return (
       <div className="flex items-center justify-center py-8">
-        <p className="text-muted-foreground">No {type} requests</p>
+        <p className="text-muted-foreground">Không có lời mời {type === "received" ? "nhận được" : "đã gửi"}</p>
       </div>
     );
   }
@@ -99,7 +99,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
 
         const renderSubText = () => (
           <span className="text-xs text-muted-foreground">
-            {type === 'received' ? 'Sent request' : 'Request sent'} • {new Date(request.createdAt).toLocaleDateString()}
+            {type === 'received' ? 'Đã gửi lời mời' : 'Đã gửi yêu cầu'} • {new Date(request.createdAt).toLocaleDateString()}
           </span>
         );
 
@@ -114,7 +114,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
                   className="gap-2 rounded-full"
                 >
                   {isProcessing && acceptMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  Accept
+                  Chấp nhận
                 </Button>
                 <Button
                   size="sm"
@@ -124,7 +124,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
                   className="gap-2 rounded-full"
                 >
                   {isProcessing && rejectMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-                  Reject
+                  Từ chối
                 </Button>
               </>
             ) : (
@@ -136,7 +136,7 @@ export default function FriendRequestList({ active, type = "received" }: FriendR
                 className="gap-2 rounded-full"
               >
                 {isProcessing && cancelMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
-                Cancel
+                Hủy
               </Button>
             )}
           </div>

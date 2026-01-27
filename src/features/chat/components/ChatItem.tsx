@@ -20,8 +20,8 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
   const otherParticipant = conversation.participants.find(p => p._id !== currentUser?._id) || conversation.participants[0];
 
   const displayName = conversation.type === "group"
-    ? conversation.group?.name || "Group Chat"
-    : otherParticipant?.displayName || "Unknown";
+    ? conversation.group?.name || "Nhóm chat"
+    : otherParticipant?.displayName || "Không xác định";
 
   const displayAvatar = conversation.type === "group"
     ? undefined // Group avatar logic if needed
@@ -31,13 +31,13 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
   const unreadCount = (currentUser && conversation.unreadCounts?.[currentUser._id]) || 0;
   const senderName =
     lastMessage?.senderId?._id === currentUser?._id
-      ? "Me"
+      ? "Tôi"
       : lastMessage?.senderId?.username || "";
 
-  let lastMessageContent = "No messages yet";
+  let lastMessageContent = "Chưa có tin nhắn";
 
   if (lastMessage) {
-    if (lastMessage.imgUrl) lastMessageContent = 'Sent an image';
+    if (lastMessage.imgUrl) lastMessageContent = 'Đã gửi một ảnh';
     // else if (lastMessage.type === 'file') lastMessageContent = 'Sent a file'; // Type removed
     else lastMessageContent = lastMessage.content;
   }
@@ -82,7 +82,7 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
             </h3>
             {conversation.type === "group" && (
               <Badge variant="secondary" className="text-[10px] h-4 px-1 py-0 bg-secondary text-secondary-foreground hover:bg-secondary">
-                Group
+                Nhóm
               </Badge>
             )}
           </div>
@@ -97,8 +97,8 @@ const ChatItem = memo(({ currentUser, conversation, onClick }: ChatItemProps) =>
           <p className={`text-xs truncate flex-1 ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground/80'}`}>
             {lastMessage ? (
               <span className="flex items-center gap-1">
-                {senderName === "Me" && <span className="text-xs opacity-70">You:</span>}
-                {senderName !== "Me" && conversation.type === "group" && <span className="text-xs opacity-70">{senderName}:</span>}
+                {senderName === "Tôi" && <span className="text-xs opacity-70">Bạn:</span>}
+                {senderName !== "Tôi" && conversation.type === "group" && <span className="text-xs opacity-70">{senderName}:</span>}
                 {lastMessageContent}
               </span>
             ) : (

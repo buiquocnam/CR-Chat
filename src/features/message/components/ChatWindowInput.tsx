@@ -85,7 +85,7 @@ export default function ChatWindowInput({ conversationId, receiverId, onMessageS
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Upload failed", error);
-      toast.error("Failed to upload file");
+      toast.error("Tải tệp thất bại");
     } finally {
       setIsUploading(false);
     }
@@ -130,10 +130,10 @@ export default function ChatWindowInput({ conversationId, receiverId, onMessageS
             <div className="w-1 h-8 bg-primary rounded-full shrink-0" />
             <div className="flex flex-col overflow-hidden">
               <span className="text-xs font-bold text-primary truncate">
-                Replying to {(replyingTo.senderId as any).displayName || (replyingTo.senderId as any).username || "Unknown"}
+                Đang trả lời {(replyingTo.senderId as any).displayName || (replyingTo.senderId as any).username || "Không xác định"}
               </span>
               <span className="text-sm text-muted-foreground truncate">
-                {replyingTo.imgUrl ? "Image" : replyingTo.content}
+                {replyingTo.imgUrl ? "Hình ảnh" : replyingTo.content}
               </span>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function ChatWindowInput({ conversationId, receiverId, onMessageS
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder={isUploading ? "Uploading file..." : "Type a message..."}
+          placeholder={isUploading ? "Đang tải lên tệp..." : "Nhập tin nhắn..."}
           disabled={isUploading}
           className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/50 text-base py-7 text-foreground font-medium"
         />

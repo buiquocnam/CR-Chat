@@ -41,7 +41,7 @@ export function LogoutButton({ className, showLabel = true, ...props }: LogoutBu
             <TooltipTrigger asChild>
                 {button}
             </TooltipTrigger>
-            <TooltipContent side="right">Log out</TooltipContent>
+            <TooltipContent side="right">Đăng xuất</TooltipContent>
         </Tooltip>
     )
 }

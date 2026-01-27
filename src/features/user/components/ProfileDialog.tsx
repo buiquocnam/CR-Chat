@@ -71,7 +71,7 @@ export function ProfileDialog() {
                         </Button>
                     </DialogTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="right">Profile</TooltipContent>
+                <TooltipContent side="right">Hồ sơ</TooltipContent>
             </Tooltip>
 
             <DialogContent className="sm:max-w-[425px]">
@@ -109,7 +109,7 @@ export function ProfileDialog() {
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="username" className="text-right">
-                                Username
+                                Tên người dùng
                             </Label>
                             <Input
                                 id="username"

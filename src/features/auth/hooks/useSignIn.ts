@@ -25,7 +25,7 @@ export const useSignIn = () => {
       await refetch();
       // fetchConversations();
       router.replace("/");
-      toast.success("Chào mừng bạn quay lại với Moji 🎉");
+      toast.success("Chào mừng bạn quay lại với CRChat 🎉");
     },
 
     onError: () => {

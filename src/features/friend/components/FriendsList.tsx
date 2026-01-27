@@ -44,7 +44,7 @@ export default function FriendsList({ active }: { active: boolean }) {
 
   const handleUnfriend = (e: React.MouseEvent, friendId: string) => {
     e.stopPropagation();
-    if (confirm("Are you sure you want to unfriend this user?")) {
+    if (confirm("Bạn có chắc chắn muốn hủy kết bạn với người này không?")) {
       unfriend(friendId);
     }
   };
@@ -79,9 +79,9 @@ export default function FriendsList({ active }: { active: boolean }) {
           user={friend}
           subText={
             friend.isOnline ? (
-              <span className="text-xs text-green-500 font-medium">Online</span>
+              <span className="text-xs text-green-500 font-medium">Trực tuyến</span>
             ) : friend.lastSeen ? (
-              <span className="text-xs text-muted-foreground">Online {new Date(friend.lastSeen).toLocaleDateString('vi-VN')}</span>
+              <span className="text-xs text-muted-foreground">Truy cập {new Date(friend.lastSeen).toLocaleDateString('vi-VN')}</span>
             ) : null
           }
           onClick={() => handleOpenUserProfileDialog(friend)}

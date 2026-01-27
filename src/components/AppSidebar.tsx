@@ -16,25 +16,25 @@ import { SettingsDialog } from "@/features/user/components/SettingsDialog";
 
 const items = [
   {
-    title: "All Chats",
+    title: "Trò chuyện",
     url: "/",
     icon: MessageCircle,
     isActive: (pathname: string) => pathname === "/" || pathname.startsWith("/c/"),
   },
   {
-    title: "Friends",
+    title: "Bạn bè",
     url: "/friends",
     icon: Users,
     isActive: (pathname: string) => pathname === "/friends",
   },
   {
-    title: "Requests",
+    title: "Lời mời",
     url: "/friends/requests",
     icon: UserPlus,
     isActive: (pathname: string) => pathname === "/friends/requests",
   },
   {
-    title: "Discover",
+    title: "Khám phá",
     url: "/friends/search",
     icon: Compass,
     isActive: (pathname: string) => pathname === "/friends/search",
@@ -56,16 +56,7 @@ export function AppSidebar() {
     >
       <SidebarContent>
         <nav className="flex flex-col h-full py-4 gap-2 w-full px-2">
-          {/* Brand & User Info Header (Optional, or keep clean) */}
-          <div className="flex items-center gap-3 px-2 py-2 mb-4">
-            <div className="w-10 h-10 bg-sidebar-primary text-sidebar-primary-foreground rounded-xl flex items-center justify-center font-bold text-xl shadow-sm ring-1 ring-border">
-              M
-            </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="font-semibold truncate text-sm">{user?.displayName || "User"}</span>
-              <span className="text-xs text-muted-foreground truncate">{user?.username || user?.email}</span>
-            </div>
-          </div>
+
 
           {/* Navigation Items */}
           <div className="flex-1 flex flex-col gap-1 w-full">
@@ -100,7 +91,7 @@ export function AppSidebar() {
                 <ProfileDialog /> {/* Use ProfileDialog trigger which is the Avatar */}
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-xs font-medium truncate">{user?.displayName}</span>
-                  <span className="text-[10px] text-muted-foreground truncate opacity-70">Online</span>
+                  <span className="text-[10px] text-muted-foreground truncate opacity-70">Trực tuyến</span>
                 </div>
               </div>
               <SettingsDialog

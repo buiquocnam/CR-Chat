@@ -13,9 +13,9 @@ import { CreateConversationDialog } from "@/features/chat/components/CreateConve
 import { Button } from "@/components/ui/button";
 
 const tabs = [
-    { label: "All", value: "all" },
-    { label: "Private", value: "friend" },
-    { label: "Group", value: "group" },
+    { label: "Tất cả", value: "all" },
+    { label: "Cá nhân", value: "friend" },
+    { label: "Nhóm", value: "group" },
 ];
 
 export function ChatSidebar() {
@@ -48,7 +48,7 @@ export function ChatSidebar() {
         <div className="flex flex-col h-full w-full md:w-[320px] lg:w-[360px] xl:w-[400px] border-r border-border bg-background/50 backdrop-blur-sm">
             <div className="p-4 pb-2 space-y-5">
                 <div className="flex items-center justify-between px-1 mt-2">
-                    <h1 className="text-xl font-bold tracking-tight text-foreground/90">Messages</h1>
+                    <h1 className="text-xl font-bold tracking-tight text-foreground/90">Tin nhắn</h1>
                     <CreateConversationDialog />
                 </div>
 
@@ -56,7 +56,7 @@ export function ChatSidebar() {
                     <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input
                         type="search"
-                        placeholder="Search..."
+                        placeholder="Tìm kiếm..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10 h-10 bg-muted/30 border-0 shadow-sm rounded-2xl ring-1 ring-border focus-visible:ring-primary/50 focus-visible:bg-muted/50 transition-all placeholder:text-muted-foreground/70"

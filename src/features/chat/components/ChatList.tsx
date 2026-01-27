@@ -39,7 +39,7 @@ export default function ChatList({
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mr-2" />
-        <p className="text-muted-foreground">Loading conversations...</p>
+        <p className="text-muted-foreground">Đang tải cuộc trò chuyện...</p>
       </div>
     );
   }
@@ -47,7 +47,7 @@ export default function ChatList({
   if (!data || data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-8">
-        <p className="text-muted-foreground">No conversations found</p>
+        <p className="text-muted-foreground">Không tìm thấy cuộc trò chuyện nào</p>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function ChatList({
             {isFetchingNextPage ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             ) : (
-              <p className="text-xs text-muted-foreground">Load more conversations</p>
+              <p className="text-xs text-muted-foreground">Tải thêm cuộc trò chuyện</p>
             )}
           </div>
         )}
